@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWNX - Fixed Layout</title>
+    <style>
+        :root {
+            --brand-color: #7B61FF;
+            --text-main: #333;
+            --text-secondary: #777;
+            --border-light: #e0e0e0;
+            --link-blue: #4a6cf7;
+            --nav-height: 70px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+
+        body { 
+            background-color: #fff; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* --- Navigation Bar (Fixed) --- */
+        nav {
+            width: 100%; 
+            height: var(--nav-height); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding: 0 40px; 
+            border-bottom: 1px solid var(--border-light); 
+            position: fixed; 
+            top: 0; 
+            background: white; 
+            z-index: 1000;
+        }
+
+        .nav-left, .nav-right { display: flex; align-items: center; gap: 25px; }
+        .nav-left svg, .nav-right svg { width: 24px; height: 24px; cursor: pointer; color: #000; }
+
+        .logo { font-size: 24px; font-weight: 600; letter-spacing: 0.5px; }
+        .logo span { color: var(--brand-color); }
+
+        /* --- Layout Container --- */
+        .container {
+            display: grid; 
+            grid-template-columns: 1fr 380px; 
+            gap: 40px;
+            width: 100%; 
+            max-width: 1200px; 
+            padding: 20px;
+            margin-top: var(--nav-height); /* Offset for fixed nav */
+            align-items: start;
+        }
+
+        /* --- Main Feed (Scrollable) --- */
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .post-card { margin-bottom: 20px; }
+        .post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .avatar { width: 48px; height: 48px; background-color: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .user-info .name { font-weight: 700; font-size: 16px; }
+        .user-info .handle { font-size: 13px; color: var(--text-secondary); }
+
+        .media-container { 
+            width: 100%; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            margin: 15px 0; 
+            background: #f8f8f8; 
+            min-height: 450px; 
+        }
+        
+        #image-content img { width: 100%; display: block; object-fit: cover; min-height: 450px; }
+        #video-content { display: none; width: 100%; height: 450px; background: #000; }
+        #video-content video { width: 100%; height: 100%; }
+
+        .post-footer { border-top: 1px solid var(--border-light); padding-top: 20px; display: flex; justify-content: space-between; }
+        .footer-left { display: flex; gap: 24px; }
+
+        /* --- Sidebar (Fixed/Sticky) --- */
+        aside { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            position: sticky; 
+            top: calc(var(--nav-height) + 20px); /* Sticks below header */
+        }
+
+        .sidebar-search input { 
+            width: 100%; padding: 14px 20px; border-radius: 30px; 
+            border: 1px solid var(--border-light); outline: none; background: #fff;
+        }
+
+        .sidebar-card { 
+            border: 1px solid var(--border-light); border-radius: 16px; 
+            padding: 24px; background: #fff;
+        }
+
+        .trend-item { display: flex; gap: 12px; margin-top: 20px; }
+
+        /* SVG Image Icon Fill */
+        .icon-fill { fill: #000; }
+        .icon-stroke { fill: none; stroke: #000; stroke-width: 2; }
+
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+            aside { position: static; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-left">
+            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            
+            <svg id="btn-image" class="icon-fill" viewBox="0 0 24 24" style="cursor:pointer;">
+                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+            </svg>
+            
+            <svg id="btn-video" class="icon-stroke" viewBox="0 0 24 24"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            
+            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"></path></svg>
+            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+        </div>
+
+        <div class="logo">OWN<span>X</span></div>
+
+        <div class="nav-right">
+            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <svg class="icon-fill" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+        </div>
+    </nav>
+
+    <div class="container">
+        <main>
+            <article class="post-card">
+                <div class="post-header">
+                    <div class="avatar"><svg width="24" height="24" fill="#aaa" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg></div>
+                    <div class="user-info">
+                        <div class="name">User_name</div>
+                        <div class="handle">@User_name</div>
+                    </div>
+                </div>
+
+                <p>Expected Growth rates by companies (2025–2030)</p>
+                <div style="color:var(--link-blue); margin-top: 5px;">#growth #company @instagram @meta</div>
+
+                <div class="media-container">
+                    <div id="image-content">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='100%25' height='100%25' fill='%23fbc2eb' /%3E%3Cpath d='M0 450 L0 300 Q200 250 400 300 T800 250 L800 450 Z' fill='%23e3c4a8' /%3E%3C/svg%3E" alt="Feed Item">
+                    </div>
+                    <div id="video-content">
+                        <video controls poster="https://via.placeholder.com/800x450/000/fff?text=OWNX+Video">
+                            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+
+                <div class="post-footer">
+                    <div class="footer-left">
+                        <svg width="22" height="22" fill="#f1c40f" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                        <svg width="22" height="22" fill="#4a6cf7" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle></svg>
+                        <svg width="22" height="22" fill="#2ecc71" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+                    </div>
+                    <div style="color:#777">20 comments</div>
+                </div>
+            </article>
+
+            <article class="post-card" style="opacity: 0.5;">
+                 <div class="post-header">
+                    <div class="avatar"></div>
+                    <div class="user-info"><div class="name">User_name</div><div class="handle">@User_name</div></div>
+                </div>
+                <div style="height: 300px; background: #f0f0f0; border-radius: 12px; margin: 10px 0;"></div>
+            </article>
+        </main>
+
+        <aside>
+            <div class="sidebar-search">
+                <input type="text" placeholder="Search here">
+            </div>
+            <div class="sidebar-card">
+                <h3>Trending topic</h3>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
+                <div class="trend-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5H7z"></path></svg>
+                    <div><b>#Weather</b><br><small style="color:#777">10k+ posts</small></div>
+                </div>
+                <div class="trend-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5H7z"></path></svg>
+                    <div><b>#Weather</b><br><small style="color:#777">10k+ posts</small></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        const btnImage = document.getElementById('btn-image');
+        const btnVideo = document.getElementById('btn-video');
+        const imgSection = document.getElementById('image-content');
+        const videoSection = document.getElementById('video-content');
+
+        btnVideo.onclick = () => {
+            imgSection.style.display = 'none';
+            videoSection.style.display = 'block';
+        };
+
+        btnImage.onclick = () => {
+            imgSection.style.display = 'block';
+            videoSection.style.display = 'none';
+            videoSection.querySelector('video').pause();
+        };
+    </script>
+</body>
+</html>
