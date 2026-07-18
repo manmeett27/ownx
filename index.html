@@ -3,28 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWNX - Fixed Layout</title>
+    <title>OWNX - Content Moderation Hub</title>
     <style>
         :root {
             --brand-color: #7B61FF;
-            --text-main: #333;
-            --text-secondary: #777;
-            --border-light: #e0e0e0;
-            --link-blue: #4a6cf7;
+            --brand-hover: #6246ea;
+            --bg-light: #f7f9fc;
+            --text-main: #2d3748;
+            --text-secondary: #718096;
+            --border-light: #e2e8f0;
+            --link-blue: #3182ce;
+            --danger-color: #e53e3e;
+            --danger-bg: rgba(229, 62, 62, 0.08);
+            --success-color: #38a169;
             --nav-height: 70px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
 
         body { 
-            background-color: #fff; 
+            background-color: var(--bg-light); 
+            color: var(--text-main);
             display: flex; 
             flex-direction: column; 
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
 
-        /* --- Navigation Bar (Fixed) --- */
+        /* --- Navigation Bar --- */
         nav {
             width: 100%; 
             height: var(--nav-height); 
@@ -35,81 +41,341 @@
             border-bottom: 1px solid var(--border-light); 
             position: fixed; 
             top: 0; 
-            background: white; 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px);
             z-index: 1000;
         }
 
-        .nav-left, .nav-right { display: flex; align-items: center; gap: 25px; }
-        .nav-left svg, .nav-right svg { width: 24px; height: 24px; cursor: pointer; color: #000; }
-
-        .logo { font-size: 24px; font-weight: 600; letter-spacing: 0.5px; }
+        .logo { font-size: 24px; font-weight: 700; letter-spacing: 0.5px; }
         .logo span { color: var(--brand-color); }
+
+        .nav-status {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #edf2f7;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+        .status-dot.online { background: var(--success-color); }
 
         /* --- Layout Container --- */
         .container {
             display: grid; 
             grid-template-columns: 1fr 380px; 
-            gap: 40px;
+            gap: 30px;
             width: 100%; 
-            max-width: 1200px; 
+            max-width: 1100px; 
             padding: 20px;
-            margin-top: var(--nav-height); /* Offset for fixed nav */
+            margin-top: calc(var(--nav-height) + 10px);
             align-items: start;
         }
 
-        /* --- Main Feed (Scrollable) --- */
+        /* --- Main Feed --- */
         main {
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 20px;
         }
 
-        .post-card { margin-bottom: 20px; }
-        .post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
-        .avatar { width: 48px; height: 48px; background-color: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .user-info .name { font-weight: 700; font-size: 16px; }
-        .user-info .handle { font-size: 13px; color: var(--text-secondary); }
+        /* --- Create Post Card --- */
+        .create-post-card {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: transform 0.2s;
+        }
+
+        .create-post-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .create-post-card textarea {
+            width: 100%;
+            height: 90px;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            background: #fcfcfd;
+            transition: all 0.2s;
+        }
+        .create-post-card textarea:focus {
+            border-color: var(--brand-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.15);
+        }
+
+        .post-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .media-select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .media-select-wrapper label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .create-post-card select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            outline: none;
+            font-size: 13px;
+            background: white;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+        .create-post-card select:focus {
+            border-color: var(--brand-color);
+        }
+
+        .btn-submit {
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            padding: 9px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(123, 97, 255, 0.25);
+        }
+        .btn-submit:hover {
+            background: var(--brand-hover);
+            transform: translateY(-1px);
+        }
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        /* --- Moderation Alerts --- */
+        .moderation-alert {
+            background: var(--danger-bg);
+            border: 1px solid rgba(229, 62, 62, 0.2);
+            color: var(--danger-color);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            animation: shake 0.4s ease-in-out;
+        }
+        .moderation-alert strong {
+            font-weight: 700;
+        }
+        .moderation-alert span {
+            font-size: 12px;
+            opacity: 0.85;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            50% { transform: translateX(6px); }
+            75% { transform: translateX(-4px); }
+        }
+
+        /* --- Post Card --- */
+        .post-card { 
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        }
+        .post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .avatar { 
+            width: 42px; 
+            height: 42px; 
+            background-color: #edf2f7; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 600;
+            color: var(--brand-color);
+        }
+        .user-info .name { font-weight: 700; font-size: 15px; }
+        .user-info .handle { font-size: 12px; color: var(--text-secondary); }
+
+        .post-caption {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
 
         .media-container { 
             width: 100%; 
             border-radius: 12px; 
             overflow: hidden; 
-            margin: 15px 0; 
-            background: #f8f8f8; 
-            min-height: 450px; 
+            margin: 12px 0; 
+            background: #f7fafc; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-light);
+            min-height: 300px;
+            max-height: 450px;
         }
-        
-        #image-content img { width: 100%; display: block; object-fit: cover; min-height: 450px; }
-        #video-content { display: none; width: 100%; height: 450px; background: #000; }
-        #video-content video { width: 100%; height: 100%; }
+        .media-container img { 
+            width: 100%; 
+            height: auto;
+            max-height: 450px;
+            object-fit: cover; 
+            display: block;
+        }
 
-        .post-footer { border-top: 1px solid var(--border-light); padding-top: 20px; display: flex; justify-content: space-between; }
-        .footer-left { display: flex; gap: 24px; }
+        /* --- Comments Section --- */
+        .comments-section {
+            border-top: 1px solid var(--border-light);
+            margin-top: 15px;
+            padding-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .comments-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .comment-item {
+            background: #f7fafc;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .comment-author {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-right: 6px;
+        }
+        .comment-text {
+            color: #4a5568;
+        }
 
-        /* --- Sidebar (Fixed/Sticky) --- */
+        .comment-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .comment-input {
+            flex-grow: 1;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border-light);
+            font-size: 13px;
+            outline: none;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        .comment-input:focus {
+            border-color: var(--brand-color);
+            background: white;
+        }
+        .btn-comment {
+            background: #edf2f7;
+            color: var(--text-main);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .btn-comment:hover {
+            background: var(--brand-color);
+            color: white;
+        }
+
+        /* --- Sidebar (Guidelines & Testing Guide) --- */
         aside { 
             display: flex; 
             flex-direction: column; 
             gap: 20px; 
             position: sticky; 
-            top: calc(var(--nav-height) + 20px); /* Sticks below header */
-        }
-
-        .sidebar-search input { 
-            width: 100%; padding: 14px 20px; border-radius: 30px; 
-            border: 1px solid var(--border-light); outline: none; background: #fff;
+            top: calc(var(--nav-height) + 10px);
         }
 
         .sidebar-card { 
-            border: 1px solid var(--border-light); border-radius: 16px; 
-            padding: 24px; background: #fff;
+            border: 1px solid var(--border-light); 
+            border-radius: 16px; 
+            padding: 20px; 
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.01);
         }
-
-        .trend-item { display: flex; gap: 12px; margin-top: 20px; }
-
-        /* SVG Image Icon Fill */
-        .icon-fill { fill: #000; }
-        .icon-stroke { fill: none; stroke: #000; stroke-width: 2; }
+        .sidebar-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+        .sidebar-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        .category-list {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .category-badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #edf2f7;
+        }
+        .badge-danger {
+            background: rgba(229, 62, 62, 0.1);
+            color: var(--danger-color);
+        }
 
         @media (max-width: 900px) {
             .container { grid-template-columns: 1fr; }
@@ -120,107 +386,368 @@
 <body>
 
     <nav>
-        <div class="nav-left">
-            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-            
-            <svg id="btn-image" class="icon-fill" viewBox="0 0 24 24" style="cursor:pointer;">
-                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-            </svg>
-            
-            <svg id="btn-video" class="icon-stroke" viewBox="0 0 24 24"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            
-            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"></path></svg>
-            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-        </div>
-
         <div class="logo">OWN<span>X</span></div>
-
-        <div class="nav-right">
-            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
-            <svg class="icon-stroke" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-            <svg class="icon-fill" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+        <div class="nav-status">
+            <div id="statusDot" class="status-dot"></div>
+            <span id="statusText">Checking Backend...</span>
         </div>
     </nav>
 
     <div class="container">
         <main>
-            <article class="post-card">
-                <div class="post-header">
-                    <div class="avatar"><svg width="24" height="24" fill="#aaa" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg></div>
-                    <div class="user-info">
-                        <div class="name">User_name</div>
-                        <div class="handle">@User_name</div>
+            <!-- Create Post Section -->
+            <section class="create-post-card">
+                <h3>Create a New Post</h3>
+                <textarea id="postCaption" placeholder="What's on your mind? (Note: Toxic text will be flagged by AI)"></textarea>
+                
+                <div id="postModerationAlert" class="moderation-alert" style="display: none;"></div>
+                
+                <div class="post-options">
+                    <div class="media-select-wrapper">
+                        <label for="postImageSelect">Attach Image:</label>
+                        <select id="postImageSelect">
+                            <option value="">No Image (Text only)</option>
+                            <option value="media/images/alchol (1).jpg">Test Image: Alcohol (Undesired)</option>
+                            <option value="media/images/drugs (2).jpg">Test Image: Drugs (Undesired)</option>
+                            <option value="media/images/sexual (1).jpg">Test Image: Nudity/Sexual (Undesired)</option>
+                            <option value="media/images/smoking (1).jpg">Test Image: Smoking (Undesired)</option>
+                            <option value="media/images/violence (1).jpg">Test Image: Violence (Undesired)</option>
+                            <option value="media/images/weapons (1).jpg">Test Image: Weapons (Undesired)</option>
+                            <option value="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='100%25' height='100%25' fill='%23edf2f7' /%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23718096'%3EHealthy Safe Content%3C/text%3E%3C/svg%3E">Safe Image (Healthy Content)</option>
+                        </select>
                     </div>
+                    <button class="btn-submit" onclick="submitPost()">Publish Post</button>
                 </div>
+            </section>
 
-                <p>Expected Growth rates by companies (2025–2030)</p>
-                <div style="color:var(--link-blue); margin-top: 5px;">#growth #company @instagram @meta</div>
-
-                <div class="media-container">
-                    <div id="image-content">
-                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='100%25' height='100%25' fill='%23fbc2eb' /%3E%3Cpath d='M0 450 L0 300 Q200 250 400 300 T800 250 L800 450 Z' fill='%23e3c4a8' /%3E%3C/svg%3E" alt="Feed Item">
-                    </div>
-                    <div id="video-content">
-                        <video controls poster="https://via.placeholder.com/800x450/000/fff?text=OWNX+Video">
-                            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                        </video>
-                    </div>
-                </div>
-
-                <div class="post-footer">
-                    <div class="footer-left">
-                        <svg width="22" height="22" fill="#f1c40f" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
-                        <svg width="22" height="22" fill="#4a6cf7" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle></svg>
-                        <svg width="22" height="22" fill="#2ecc71" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
-                    </div>
-                    <div style="color:#777">20 comments</div>
-                </div>
-            </article>
-
-            <article class="post-card" style="opacity: 0.5;">
-                 <div class="post-header">
-                    <div class="avatar"></div>
-                    <div class="user-info"><div class="name">User_name</div><div class="handle">@User_name</div></div>
-                </div>
-                <div style="height: 300px; background: #f0f0f0; border-radius: 12px; margin: 10px 0;"></div>
-            </article>
+            <!-- Main Feed -->
+            <div id="feedList" style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Dynamically populated posts -->
+            </div>
         </main>
 
         <aside>
-            <div class="sidebar-search">
-                <input type="text" placeholder="Search here">
-            </div>
             <div class="sidebar-card">
-                <h3>Trending topic</h3>
-                <hr style="border: none; border-top: 1px solid #eee; margin: 15px 0;">
-                <div class="trend-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5H7z"></path></svg>
-                    <div><b>#Weather</b><br><small style="color:#777">10k+ posts</small></div>
+                <h3>AI Content Moderation Guide</h3>
+                <p>OWNX incorporates a real-time Content Moderation AI Service to detect prohibited posts and comments.</p>
+                <div class="category-list">
+                    <div class="category-badge badge-danger"><span>Image: Alcohol</span><span>Block</span></div>
+                    <div class="category-badge badge-danger"><span>Image: Drugs</span><span>Block</span></div>
+                    <div class="category-badge badge-danger"><span>Image: Sexual Content</span><span>Block</span></div>
+                    <div class="category-badge badge-danger"><span>Image: Violence / Weapons</span><span>Block</span></div>
+                    <div class="category-badge badge-danger"><span>Text: Harassment</span><span>Block</span></div>
+                    <div class="category-badge badge-danger"><span>Text: Hate Speech</span><span>Block</span></div>
                 </div>
-                <div class="trend-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5H7z"></path></svg>
-                    <div><b>#Weather</b><br><small style="color:#777">10k+ posts</small></div>
-                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>Testing Instructions</h3>
+                <p><strong>1. Test Undesired Comments:</strong> Try commenting phrases containing words like "idiot", "moron", "porn", or "kill myself". They will be caught by the AI and blocked.</p>
+                <p><strong>2. Test Undesired Uploads:</strong> Select one of the "Test Image" options in the publisher dropdown. The model will flag it and prevent the post from being created.</p>
             </div>
         </aside>
     </div>
 
     <script>
-        const btnImage = document.getElementById('btn-image');
-        const btnVideo = document.getElementById('btn-video');
-        const imgSection = document.getElementById('image-content');
-        const videoSection = document.getElementById('video-content');
+        const API_BASE = "http://localhost:5000/api";
+        let isBackendOnline = false;
 
-        btnVideo.onclick = () => {
-            imgSection.style.display = 'none';
-            videoSection.style.display = 'block';
-        };
+        // Fallback mock database for client-only mode
+        let mockPosts = [
+            {
+                post_id: 101,
+                user_id: 1,
+                username: "alex_jones",
+                caption: "Beautiful sunset today during my evening walk! So peaceful.",
+                image_url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='100%25' height='100%25' fill='%23fbc2eb' /%3E%3Cpath d='M0 450 L0 300 Q200 250 400 300 T800 250 L800 450 Z' fill='%23e3c4a8' /%3E%3C/svg%3E",
+                created_at: new Date().toISOString(),
+                comments: [
+                    { comment_id: 1, username: "julia_k", content: "Wow, absolutely beautiful!" },
+                    { comment_id: 2, username: "sam_smith", content: "Great shot!" }
+                ]
+            }
+        ];
 
-        btnImage.onclick = () => {
-            imgSection.style.display = 'block';
-            videoSection.style.display = 'none';
-            videoSection.querySelector('video').pause();
-        };
+        // Check backend connection
+        async function checkBackendConnection() {
+            const statusDot = document.getElementById("statusDot");
+            const statusText = document.getElementById("statusText");
+
+            try {
+                const res = await fetch("http://localhost:5000/");
+                if (res.ok) {
+                    isBackendOnline = true;
+                    statusDot.className = "status-dot online";
+                    statusText.textContent = "Backend Online (AI Shield Active)";
+                } else {
+                    throw new Error();
+                }
+            } catch (err) {
+                isBackendOnline = false;
+                statusDot.className = "status-dot";
+                statusText.textContent = "Backend Offline (Client Mock Active)";
+            }
+            loadPosts();
+        }
+
+        // Emulated local moderation check in case backend is offline
+        function localModerationCheck(text) {
+            const badWords = ["idiot", "moron", "loser", "shut up", "fuck", "porn", "kill", "murder", "scam"];
+            if (!text) return { flagged: false };
+            const textLower = text.toLowerCase();
+            for (const word of badWords) {
+                if (textLower.includes(word)) {
+                    return {
+                        flagged: true,
+                        reason: `Flagged: Prohibited text detected (Category: harassment/violence/sexual).`
+                    };
+                }
+            }
+            return { flagged: false };
+        }
+
+        // Load posts from server or mock database
+        async function loadPosts() {
+            const feedList = document.getElementById("feedList");
+            feedList.innerHTML = "";
+
+            let posts = [];
+            if (isBackendOnline) {
+                try {
+                    const res = await fetch(`${API_BASE}/posts`);
+                    posts = await res.json();
+                    
+                    // Fetch comments for each post
+                    for (let post of posts) {
+                        const commRes = await fetch(`${API_BASE}/posts/${post.post_id}/comments`);
+                        post.comments = commRes.ok ? await commRes.json() : [];
+                    }
+                } catch (err) {
+                    console.error("Error loading posts from server:", err);
+                    posts = mockPosts;
+                }
+            } else {
+                posts = mockPosts;
+            }
+
+            if (posts.length === 0) {
+                feedList.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 40px; background: white; border-radius: 16px;">No posts published yet. Be the first to create one!</div>`;
+                return;
+            }
+
+            posts.forEach(post => {
+                const card = document.createElement("article");
+                card.className = "post-card";
+                
+                let imageHTML = "";
+                if (post.image_url) {
+                    imageHTML = `
+                        <div class="media-container">
+                            <img src="${post.image_url}" alt="Post Image" onerror="this.src='https://via.placeholder.com/800x450/edf2f7/718096?text=Image+Load+Error'">
+                        </div>
+                    `;
+                }
+
+                // Render comments
+                let commentsHTML = "";
+                const comments = post.comments || [];
+                comments.forEach(c => {
+                    commentsHTML += `
+                        <div class="comment-item">
+                            <span class="comment-author">@${c.username}</span>
+                            <span class="comment-text">${escapeHTML(c.content)}</span>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="post-header">
+                        <div class="avatar">${(post.username || "U").substring(0, 2).toUpperCase()}</div>
+                        <div class="user-info">
+                            <div class="name">@${post.username || "user_" + post.user_id}</div>
+                            <div class="handle">${new Date(post.created_at).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <p class="post-caption">${escapeHTML(post.caption || "")}</p>
+                    ${imageHTML}
+                    
+                    <div class="comments-section">
+                        <div class="comments-title">Comments (${comments.length})</div>
+                        <div id="commentList-${post.post_id}" class="comment-list">
+                            ${commentsHTML}
+                        </div>
+                        <div id="commentAlert-${post.post_id}" class="moderation-alert" style="display: none; margin-top: 5px;"></div>
+                        <div class="comment-form">
+                            <input id="commentInput-${post.post_id}" class="comment-input" type="text" placeholder="Write a comment...">
+                            <button class="btn-comment" onclick="submitComment(${post.post_id})">Send</button>
+                        </div>
+                    </div>
+                `;
+                feedList.appendChild(card);
+            });
+        }
+
+        // Submit a new post
+        async function submitPost() {
+            const captionInput = document.getElementById("postCaption");
+            const imageSelect = document.getElementById("postImageSelect");
+            const alertDiv = document.getElementById("postModerationAlert");
+
+            const caption = captionInput.value.trim();
+            const image_url = imageSelect.value;
+
+            alertDiv.style.display = "none";
+
+            if (!caption && !image_url) {
+                alertDiv.style.display = "block";
+                alertDiv.innerHTML = "<strong>Error:</strong> Post cannot be completely empty.";
+                return;
+            }
+
+            // Local fallback check first if offline
+            if (!isBackendOnline) {
+                const textCheck = localModerationCheck(caption);
+                if (textCheck.flagged) {
+                    alertDiv.style.display = "block";
+                    alertDiv.innerHTML = `<strong>Blocked by Shield:</strong> ${textCheck.reason}`;
+                    return;
+                }
+                if (image_url && image_url.startsWith("media/images")) {
+                    const category = image_url.split("/").pop().split(" ")[0]; // e.g. alchol
+                    const cleanCategory = category === "alchol" ? "alcohol" : category;
+                    alertDiv.style.display = "block";
+                    alertDiv.innerHTML = `<strong>Blocked by Shield (Image Moderation):</strong> Undesired image category detected: <strong>${cleanCategory}</strong>.`;
+                    return;
+                }
+
+                // Add to mock
+                const newMock = {
+                    post_id: Date.now(),
+                    user_id: 1,
+                    username: "you",
+                    caption: caption,
+                    image_url: image_url || null,
+                    created_at: new Date().toISOString(),
+                    comments: []
+                };
+                mockPosts.unshift(newMock);
+                captionInput.value = "";
+                imageSelect.selectedIndex = 0;
+                loadPosts();
+                return;
+            }
+
+            // Call Backend Server
+            try {
+                const res = await fetch(`${API_BASE}/posts`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user_id: 1,
+                        caption,
+                        image_url,
+                        post_type: image_url ? "image" : "text"
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alertDiv.style.display = "block";
+                    const modReason = data.moderation?.reason || "Flagged content";
+                    alertDiv.innerHTML = `<strong>Blocked by AI Moderator:</strong> ${data.error}<br><span>Reason: ${modReason}</span>`;
+                } else {
+                    captionInput.value = "";
+                    imageSelect.selectedIndex = 0;
+                    loadPosts();
+                }
+            } catch (err) {
+                console.error("Error creating post:", err);
+                alertDiv.style.display = "block";
+                alertDiv.innerHTML = "<strong>Error:</strong> Failed to connect to server.";
+            }
+        }
+
+        // Submit comment on a post
+        async function submitComment(postId) {
+            const input = document.getElementById(`commentInput-${postId}`);
+            const alertDiv = document.getElementById(`commentAlert-${postId}`);
+            const content = input.value.trim();
+
+            alertDiv.style.display = "none";
+
+            if (!content) return;
+
+            if (!isBackendOnline) {
+                // Check locally
+                const textCheck = localModerationCheck(content);
+                if (textCheck.flagged) {
+                    alertDiv.style.display = "block";
+                    alertDiv.innerHTML = `<strong>Blocked:</strong> comment is flagged as toxic.`;
+                    input.style.borderColor = "var(--danger-color)";
+                    setTimeout(() => input.style.borderColor = "", 1500);
+                    return;
+                }
+
+                // Add to mock post
+                const post = mockPosts.find(p => p.post_id === postId);
+                if (post) {
+                    post.comments.push({
+                        comment_id: Date.now(),
+                        username: "you",
+                        content: content
+                    });
+                }
+                input.value = "";
+                loadPosts();
+                return;
+            }
+
+            // Call Backend
+            try {
+                const res = await fetch(`${API_BASE}/posts/${postId}/comments`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        username: "guest_user",
+                        content: content
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alertDiv.style.display = "block";
+                    const modReason = data.moderation?.reason || "Flagged content";
+                    alertDiv.innerHTML = `<strong>Blocked:</strong> ${data.error}<br><span>${modReason}</span>`;
+                    input.style.borderColor = "var(--danger-color)";
+                    setTimeout(() => input.style.borderColor = "", 1500);
+                } else {
+                    input.value = "";
+                    loadPosts();
+                }
+            } catch (err) {
+                console.error("Error sending comment:", err);
+                alertDiv.style.display = "block";
+                alertDiv.innerHTML = "<strong>Error:</strong> Network connection failed.";
+            }
+        }
+
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        // Initialize Page
+        window.onload = checkBackendConnection;
     </script>
 </body>
 </html>
