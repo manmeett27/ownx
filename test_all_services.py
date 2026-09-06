@@ -10,7 +10,6 @@ print("==================================================")
 print("OWNX FULL SYSTEM INTEGRATION TEST SUITE")
 print("==================================================")
 
-# 1. Start Services
 python_cmd = sys.executable
 
 processes = {}
@@ -30,7 +29,6 @@ try:
     print("Waiting 6 seconds for services to initialize...")
     time.sleep(6)
 
-    # Helper HTTP request function
     def http_req(url, method="GET", data=None, headers=None):
         if headers is None:
             headers = {}
@@ -78,6 +76,9 @@ try:
         })
         print(f"[{res_str}] {method} {endpoint} -> Status {status}")
 
+    # Unique test username for database persistence
+    unique_user = f"user_{int(time.time())}"
+
     # --- Node Backend Tests (5000) ---
     st, resp = http_req("http://127.0.0.1:5000/")
     record("/", "GET", st, resp, "Node Backend Root")
@@ -85,11 +86,11 @@ try:
     st, resp = http_req("http://127.0.0.1:5000/api/users")
     record("/api/users", "GET", st, resp, "Get All Users")
 
-    st, resp = http_req("http://127.0.0.1:5000/api/users/register", "POST", {"username": "Charlie", "password": "password123", "location_id": 1})
-    record("/api/users/register", "POST", st, resp, "Register User Charlie")
+    st, resp = http_req("http://127.0.0.1:5000/api/users/register", "POST", {"username": unique_user, "password": "password123", "location_id": 1})
+    record("/api/users/register", "POST", st, resp, f"Register User {unique_user}")
 
-    st, resp = http_req("http://127.0.0.1:5000/api/users/login", "POST", {"username": "Charlie", "password": "password123"})
-    record("/api/users/login", "POST", st, resp, "Login User Charlie")
+    st, resp = http_req("http://127.0.0.1:5000/api/users/login", "POST", {"username": unique_user, "password": "password123"})
+    record("/api/users/login", "POST", st, resp, f"Login User {unique_user}")
 
     st, resp = http_req("http://127.0.0.1:5000/api/posts")
     record("/api/posts", "GET", st, resp, "Get All Posts")
@@ -116,7 +117,7 @@ try:
     record("/api/posts/1/comments", "GET", st, resp, "Get Comments for Post 1")
 
     st, resp = http_req("http://127.0.0.1:5000/api/posts/1/comments", "POST", {
-        "username": "Charlie",
+        "username": unique_user,
         "content": "Great post! Really looking forward to more updates."
     })
     record("/api/posts/1/comments", "POST", st, resp, "Create Comment")

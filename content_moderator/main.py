@@ -27,7 +27,7 @@ def root():
         "service": "OWNX Content Moderation API",
         "status": "online",
         "model_loaded": moderator.model is not None,
-        "keywords_loaded_count": len(moderator.keywords)
+        "keywords_loaded_count": len(moderator.keywords) if (moderator and moderator.keywords) else 0
     }
 
 @app.post("/moderate/text")
@@ -83,7 +83,7 @@ def reload_service():
     return {
         "status": "reloaded",
         "model_loaded": moderator.model is not None,
-        "keywords_loaded_count": len(moderator.keywords)
+        "keywords_loaded_count": len(moderator.keywords) if (moderator and moderator.keywords) else 0
     }
 
 if __name__ == "__main__":

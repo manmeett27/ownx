@@ -17,6 +17,19 @@ const initializeDatabase = async () => {
             );
         `);
 
+        // Seed default locations and interests if empty
+        await pool.query(`
+            INSERT INTO locations (location_id, location_name) 
+            VALUES (1, 'Lucknow'), (2, 'Delhi') 
+            ON CONFLICT (location_id) DO NOTHING;
+        `);
+
+        await pool.query(`
+            INSERT INTO interests (interest_id, interest_name) 
+            VALUES (1, 'Technology'), (2, 'Food & Health'), (3, 'Travel') 
+            ON CONFLICT (interest_id) DO NOTHING;
+        `);
+
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 user_id SERIAL PRIMARY KEY,
@@ -96,7 +109,7 @@ const initializeDatabase = async () => {
             );
         `);
 
-        console.log("Database tables initialized (users, locations, interests, posts, comments, likes, shares, followers)");
+        console.log("Supabase database tables and seed values initialized (users, locations, interests, posts, comments, likes, shares, followers)");
     } catch (err) {
         console.error("Error initializing database tables:", err.message);
     }
@@ -108,7 +121,7 @@ pool.query(
         if (err) {
             console.log("Database connection test error:", err);
         } else {
-            console.log("Database Connected");
+            console.log("Connected to Supabase PostgreSQL Database");
             await initializeDatabase();
         }
     }
