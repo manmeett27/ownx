@@ -1,3 +1,14 @@
-feed_recommendation_system/.env
 node_modules/
 .env
+feed_recommendation_system/.env
+.venv/
+*/.venv/
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.DS_Store
+content_moderator/temp/

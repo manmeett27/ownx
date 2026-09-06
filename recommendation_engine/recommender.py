@@ -30,14 +30,14 @@ class ImplicitSocialRecommender:
         grouped['username'] = grouped['username'].astype('category')
         grouped['post_id'] = grouped['post_id'].astype('category')
 
-        # Build translation tables between string names and integer matrix coordinates
-        self.user_to_idx = dict(enumerate(grouped['username'].cat.categories))
-        self.user_to_idx = {v: k for k, v in self.user_to_idx.items()}
-        self.idx_to_user = {k: v for k, v in self.user_to_idx.items()}
+        # Build correct bidirectional mapping dictionaries
+        user_categories = list(grouped['username'].cat.categories)
+        self.user_to_idx = {user: idx for idx, user in enumerate(user_categories)}
+        self.idx_to_user = {idx: user for idx, user in enumerate(user_categories)}
 
-        self.post_to_idx = dict(enumerate(grouped['post_id'].cat.categories))
-        self.post_to_idx = {v: k for k, v in self.post_to_idx.items()}
-        self.idx_to_post = {k: v for k, v in self.post_to_idx.items()}
+        post_categories = list(grouped['post_id'].cat.categories)
+        self.post_to_idx = {post: idx for idx, post in enumerate(post_categories)}
+        self.idx_to_post = {idx: post for idx, post in enumerate(post_categories)}
 
         # Generate memory-efficient Compressed Sparse Row matrix
         self.user_items_sparse = sparse.csr_matrix(
@@ -66,14 +66,26 @@ class ImplicitSocialRecommender:
             return {"type": "location_trending", "posts": self._get_location_trending(location, num_recs)}
 
         # Phase 2: Implicit Collaborative Filtering
-        user_idx = self.user_to_idx[username]
-        ids, _ = self.model.recommend(
-            userid=user_idx, 
-            user_items=self.user_items_sparse[user_idx], 
-            N=num_recs, 
-            filter_already_liked_items=True
-        )
-        return {"type": "personalized", "posts": [self.idx_to_post[idx] for idx in ids]}
+        try:
+            user_idx = self.user_to_idx[username]
+            res = self.model.recommend(
+                userid=user_idx, 
+                user_items=self.user_items_sparse[user_idx], 
+                N=num_recs, 
+                filter_already_liked_items=True
+            )
+            
+            # Handle implicit version variations (returns tuple (ids, scores) or ids array)
+            if isinstance(res, tuple):
+                ids = res[0]
+            else:
+                ids = res
+
+            rec_posts = [int(self.idx_to_post[idx]) for idx in ids if idx in self.idx_to_post]
+            return {"type": "personalized", "posts": rec_posts}
+        except Exception as e:
+            print(f"Error in recommendation logic: {e}. Falling back to location trending.")
+            return {"type": "location_trending", "posts": self._get_location_trending(location, num_recs)}
 
     def _get_location_trending(self, location, num_recs):
         """Calculates trending posts inside a specific geographic region over 7 days."""
@@ -84,6 +96,9 @@ class ImplicitSocialRecommender:
         if local_recent.empty:
             local_recent = self.interactions[self.interactions['created_at'] >= seven_days_ago]
             
+        if local_recent.empty:
+            return []
+
         trending = local_recent.groupby('post_id')['weight'].sum().reset_index()
         trending = trending.sort_values(by='weight', ascending=False)
-        return trending['post_id'].head(num_recs).tolist()
+        return [int(p) for p in trending['post_id'].head(num_recs).tolist()]

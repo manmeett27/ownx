@@ -1,33 +1,40 @@
 from db.connection import get_pool
 
-async def get_post_stats(post_ids: list[str]) -> dict:
+async def get_post_stats(post_ids: list) -> dict:
     if not post_ids:
         return {}
     pool = await get_pool()
-    async with pool.acquire() as conn:
-        rows = await conn.fetch(
-            """
-            SELECT
-                p.post_id,
-                COUNT(DISTINCT l.like_id)    AS likes,
-                COUNT(DISTINCT c.comment_id) AS comments,
-                COUNT(DISTINCT s.share_id)   AS shares
-            FROM posts p
-            LEFT JOIN likes    l ON l.post_id = p.post_id
-            LEFT JOIN comments c ON c.post_id = p.post_id
-            LEFT JOIN shares   s ON s.post_id = p.post_id
-            WHERE p.post_id = ANY($1::int[])
-            GROUP BY p.post_id
-            """,
-            post_ids
-        )
-    return {r["post_id"]: dict(r) for r in rows}
+    if not pool:
+        return {pid: {"likes": 1, "comments": 1, "shares": 0} for pid in post_ids}
+    try:
+        int_ids = [int(p) for p in post_ids]
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT
+                    p.post_id,
+                    COUNT(DISTINCT l.like_id)    AS likes,
+                    COUNT(DISTINCT c.comment_id) AS comments,
+                    COUNT(DISTINCT s.share_id)   AS shares
+                FROM posts p
+                LEFT JOIN likes    l ON l.post_id = p.post_id
+                LEFT JOIN comments c ON c.post_id = p.post_id
+                LEFT JOIN shares   s ON s.post_id = p.post_id
+                WHERE p.post_id = ANY($1::int[])
+                GROUP BY p.post_id
+                """,
+                int_ids
+            )
+        return {r["post_id"]: dict(r) for r in rows}
+    except Exception as e:
+        print(f"[Score Service Error] {e}")
+        return {}
 
 
 def calculate_scores(
     posts: list[dict],
     user_interests: list[dict],
-    user_location_id: str,
+    user_location_id: any,
     stats: dict
 ) -> list[dict]:
 
@@ -45,10 +52,11 @@ def calculate_scores(
             int(s.get("comments", 0)) * 2 +
             int(s.get("shares", 0)) * 3
         )
-        activity_score = min(raw / 1000, 1.0)
+        activity_score = min(raw / 1000.0, 1.0)
 
         # ── Location score (20%) ─────────────────
-        location_score = 1.0 if post.get("location_id") == user_location_id else 0.0
+        loc_id = post.get("location_id")
+        location_score = 1.0 if (loc_id is not None and user_location_id is not None and int(loc_id) == int(user_location_id)) else 0.0
 
         # ── Final weighted score ──────────────────
         final_score = (

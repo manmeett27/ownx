@@ -1,0 +1,347 @@
+[
+  {
+    "endpoint": "/",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "message": "OWNX Backend Running",
+      "status": "online"
+    },
+    "notes": "Node Backend Root"
+  },
+  {
+    "endpoint": "/api/users",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": [
+      {
+        "user_id": 1,
+        "username": "Alice",
+        "location_id": 1,
+        "created_at": "2026-09-06T11:39:30.169Z"
+      },
+      {
+        "user_id": 2,
+        "username": "Bob",
+        "location_id": 2,
+        "created_at": "2026-09-06T11:39:30.169Z"
+      }
+    ],
+    "notes": "Get All Users"
+  },
+  {
+    "endpoint": "/api/users/register",
+    "method": "POST",
+    "status": 201,
+    "result": "PASS",
+    "response": {
+      "user_id": 3,
+      "username": "Charlie",
+      "location_id": 1,
+      "created_at": "2026-09-06T11:39:36.466Z"
+    },
+    "notes": "Register User Charlie"
+  },
+  {
+    "endpoint": "/api/users/login",
+    "method": "POST",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "message": "Login successful",
+      "user": {
+        "user_id": 3,
+        "username": "Charlie",
+        "location_id": 1,
+        "created_at": "2026-09-06T11:39:36.466Z"
+      }
+    },
+    "notes": "Login User Charlie"
+  },
+  {
+    "endpoint": "/api/posts",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": [
+      {
+        "post_id": 1,
+        "user_id": 1,
+        "caption": "Welcome to OWNX - a next generation social platform!",
+        "image_url": "media/images/healthy_food.png",
+        "post_type": "image",
+        "category_id": 1,
+        "interest_id": 1,
+        "location_id": 1,
+        "created_at": "2026-09-06T11:39:30.169Z",
+        "username": "Alice"
+      },
+      {
+        "post_id": 2,
+        "user_id": 2,
+        "caption": "Exploring healthy recipes today!",
+        "image_url": "media/images/food.png",
+        "post_type": "image",
+        "category_id": 2,
+        "interest_id": 2,
+        "location_id": 2,
+        "created_at": "2026-09-06T11:39:30.169Z",
+        "username": "Bob"
+      }
+    ],
+    "notes": "Get All Posts"
+  },
+  {
+    "endpoint": "/api/posts",
+    "method": "POST",
+    "status": 201,
+    "result": "PASS",
+    "response": {
+      "post_id": 3,
+      "user_id": 1,
+      "caption": "Enjoying a wonderful tech conference in Lucknow!",
+      "image_url": "media/images/healthy_food.png",
+      "post_type": "image",
+      "category_id": 1,
+      "interest_id": 1,
+      "location_id": 1,
+      "created_at": "2026-09-06T11:39:36.636Z"
+    },
+    "notes": "Create Valid Post"
+  },
+  {
+    "endpoint": "/api/posts (Inappropriate Caption)",
+    "method": "POST",
+    "status": 400,
+    "result": "PASS",
+    "response": {
+      "error": "Post caption violates content guidelines",
+      "moderation": {
+        "flagged": true,
+        "reason": "Local fallback: Detected inappropriate content",
+        "matched_keywords": [
+          {
+            "word": "idiot",
+            "category": "harassment/inappropriate"
+          },
+          {
+            "word": "shut up",
+            "category": "harassment/inappropriate"
+          }
+        ]
+      }
+    },
+    "notes": "Moderation rejection test"
+  },
+  {
+    "endpoint": "/api/posts/1/comments",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": [
+      {
+        "comment_id": 1,
+        "post_id": 1,
+        "username": "Bob",
+        "content": "Awesome platform! Keep it up.",
+        "created_at": "2026-09-06T11:39:30.169Z"
+      }
+    ],
+    "notes": "Get Comments for Post 1"
+  },
+  {
+    "endpoint": "/api/posts/1/comments",
+    "method": "POST",
+    "status": 201,
+    "result": "PASS",
+    "response": {
+      "comment_id": 2,
+      "post_id": 1,
+      "username": "Charlie",
+      "content": "Great post! Really looking forward to more updates.",
+      "created_at": "2026-09-06T11:39:36.701Z"
+    },
+    "notes": "Create Comment"
+  },
+  {
+    "endpoint": "/api/followers/follow",
+    "method": "POST",
+    "status": 201,
+    "result": "PASS",
+    "response": {
+      "message": "Successfully followed user",
+      "follower": {
+        "follower_id": 1,
+        "user_id": 1,
+        "follower_user_id": 2,
+        "created_at": "2026-09-06T11:39:30.169Z"
+      }
+    },
+    "notes": "Follow User"
+  },
+  {
+    "endpoint": "/api/followers/1",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": [
+      {
+        "follower_id": 1,
+        "user_id": 1,
+        "follower_user_id": 2,
+        "created_at": "2026-09-06T11:39:30.169Z",
+        "username": "Bob"
+      }
+    ],
+    "notes": "Get Followers of User 1"
+  },
+  {
+    "endpoint": "/api/followers/2/following",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": [
+      {
+        "follower_id": 1,
+        "user_id": 1,
+        "follower_user_id": 2,
+        "created_at": "2026-09-06T11:39:30.169Z",
+        "username": "Alice"
+      }
+    ],
+    "notes": "Get Following of User 2"
+  },
+  {
+    "endpoint": "/",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "service": "OWNX Content Moderation API",
+      "status": "online",
+      "model_loaded": true,
+      "keywords_loaded_count": 101
+    },
+    "notes": "Content Moderation Root"
+  },
+  {
+    "endpoint": "/moderate/text (Clean)",
+    "method": "POST",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "flagged": false,
+      "reason": null,
+      "matched_keywords": []
+    },
+    "notes": "Text Moderation Clean"
+  },
+  {
+    "endpoint": "/moderate/text (Flagged)",
+    "method": "POST",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "flagged": false,
+      "reason": null,
+      "matched_keywords": []
+    },
+    "notes": "Text Moderation Flagged"
+  },
+  {
+    "endpoint": "/moderate/image-path (Space Path)",
+    "method": "POST",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "flagged": true,
+      "reason": "Detected prohibited content via heuristics: alcohol",
+      "details": {
+        "category": "alcohol",
+        "confidence": 1.0,
+        "detection_method": "filename_heuristics"
+      }
+    },
+    "notes": "Image Path Moderation (with spaces)"
+  },
+  {
+    "endpoint": "/",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "service": "OWNX Feed Recommendation System API",
+      "status": "online"
+    },
+    "notes": "Feed Service Root"
+  },
+  {
+    "endpoint": "/feed/1",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "status": "success",
+      "user_id": 1,
+      "count": 2,
+      "posts": [
+        {
+          "post_id": 1,
+          "user_id": 1,
+          "caption": "Welcome to OWNX",
+          "post_type": "image",
+          "category_id": 1,
+          "interest_id": 1,
+          "location_id": 1,
+          "created_at": "2026-09-06T10:00:00",
+          "final_score": 0.7009
+        },
+        {
+          "post_id": 2,
+          "user_id": 2,
+          "caption": "Healthy food post",
+          "post_type": "image",
+          "category_id": 2,
+          "interest_id": 2,
+          "location_id": 1,
+          "created_at": "2026-09-06T11:00:00",
+          "final_score": 0.7009
+        }
+      ]
+    },
+    "notes": "Get Feed for User 1"
+  },
+  {
+    "endpoint": "/",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "service": "OWNX Implicit Recommendation Engine API",
+      "status": "online",
+      "model_trained": true
+    },
+    "notes": "Recommender Engine Root"
+  },
+  {
+    "endpoint": "/feed?username=user_0&location=Lucknow",
+    "method": "GET",
+    "status": 200,
+    "result": "PASS",
+    "response": {
+      "username": "user_0",
+      "location": "Lucknow",
+      "recommendation_type": "personalized",
+      "recommended_post_ids": [
+        1087,
+        1055,
+        1068,
+        1125,
+        1011
+      ]
+    },
+    "notes": "Implicit ALS Feed Recommendation"
+  }
+]

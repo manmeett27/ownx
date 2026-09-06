@@ -1,8 +1,11 @@
 import os
+import sys
 import shutil
-# pyrefly: ignore [missing-import]
+
+# Ensure directory is on sys.path for relative imports regardless of CWD
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
-# pyrefly: ignore [missing-import]
 from pydantic import BaseModel
 from typing import Optional
 from moderator import ContentModerator
@@ -43,7 +46,6 @@ async def moderate_image(
     Accepts direct file uploads or a local image path.
     """
     if file is not None:
-        # Create a temp directory inside the service folder
         temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp")
         os.makedirs(temp_dir, exist_ok=True)
         
@@ -52,18 +54,15 @@ async def moderate_image(
             with open(temp_file_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
                 
-            # Perform moderation
             result = moderator.moderate_image(temp_file_path)
             return result
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
         finally:
-            # Clean up temp file
             if os.path.exists(temp_file_path):
                 os.remove(temp_file_path)
                 
     elif image_path is not None:
-        # Perform moderation on the provided path
         result = moderator.moderate_image(image_path)
         return result
         
@@ -89,5 +88,4 @@ def reload_service():
 
 if __name__ == "__main__":
     import uvicorn
-    # Run on port 5001 to avoid colliding with Node.js (5000) and Recommendation Engine (often 8000+)
     uvicorn.run(app, host="127.0.0.1", port=5001)

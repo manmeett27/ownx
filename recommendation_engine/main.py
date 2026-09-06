@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from recommender import ImplicitSocialRecommender
 
-app = FastAPI(title="Social Media Recommender Network API")
+app = FastAPI(title="OWNX Implicit Recommendation Engine API", version="1.0")
 engine = None 
 
 @app.on_event("startup")
@@ -35,9 +35,15 @@ def startup_event():
     engine.train_als_model()
     print("Recommendation system trained and actively waiting for network requests.")
 
+@app.get("/")
+def root():
+    return {"service": "OWNX Implicit Recommendation Engine API", "status": "online", "model_trained": engine is not None}
+
 @app.get("/feed")
 def get_user_feed(username: str, location: str):
     """Web endpoint to fetch a customized home feed for a user."""
+    if engine is None:
+        return {"error": "Engine not initialized"}
     result = engine.get_recommendations(username, location)
     return {
         "username": username,
@@ -45,3 +51,7 @@ def get_user_feed(username: str, location: str):
         "recommendation_type": result["type"],
         "recommended_post_ids": result["posts"]
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=5003)

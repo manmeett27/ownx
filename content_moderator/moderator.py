@@ -1,5 +1,6 @@
 import os
 import csv
+import urllib.parse
 import torch
 from PIL import Image
 from torchvision import transforms
@@ -92,8 +93,20 @@ class ContentModerator:
 
     def moderate_image(self, image_path: str) -> dict:
         """Moderates an image using filename heuristics first, then deep learning model inference."""
+        if not image_path:
+            return {"flagged": False, "reason": "No image path provided", "details": {}}
+            
+        # Decode URL-encoded characters (e.g., spaces as %20 or +)
+        image_path = urllib.parse.unquote(image_path)
+        
+        # Resolve relative paths
+        if not os.path.isabs(image_path):
+            rel_resolved = os.path.join(self.base_dir, image_path)
+            if os.path.exists(rel_resolved):
+                image_path = rel_resolved
+
         if not os.path.exists(image_path):
-            # If path doesn't exist, try resolving it relative to media/images
+            # Try resolving relative to media/images
             alternate_path = os.path.join(self.base_dir, "media", "images", os.path.basename(image_path))
             if os.path.exists(alternate_path):
                 image_path = alternate_path
@@ -152,4 +165,3 @@ class ContentModerator:
                 "detection_method": "heuristics_safe"
             }
         }
-

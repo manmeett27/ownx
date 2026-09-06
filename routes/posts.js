@@ -79,7 +79,7 @@ router.get("/", async (req, res) => {
         `);
         res.json(result.rows);
     } catch (err) {
-        console.error(err);
+        console.error("Error fetching posts:", err.message);
         res.status(500).json({ error: "Failed to retrieve posts" });
     }
 });
@@ -126,7 +126,7 @@ router.post("/", async (req, res) => {
         
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error(err);
+        console.error("Error creating post:", err.message);
         res.status(500).json({ error: "Failed to create post" });
     }
 });
@@ -142,7 +142,7 @@ router.get("/:post_id/comments", async (req, res) => {
         `, [post_id]);
         res.json(result.rows);
     } catch (err) {
-        console.error(err);
+        console.error("Error fetching comments:", err.message);
         res.status(500).json({ error: "Failed to retrieve comments" });
     }
 });
@@ -174,7 +174,10 @@ router.post("/:post_id/comments", async (req, res) => {
         
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error(err);
+        console.error("Error adding comment:", err.message);
+        if (err.message.includes("Post not found") || err.code === "23503") {
+            return res.status(404).json({ error: "Post not found" });
+        }
         res.status(500).json({ error: "Failed to add comment" });
     }
 });
