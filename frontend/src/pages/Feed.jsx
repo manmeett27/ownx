@@ -35,10 +35,13 @@ export default function Feed({ onNavigateAuth, onNavigateProfile, onNavigateVide
   const handlePostCreated = (newPost) => {
     // newPost is already the fully-populated post returned by the backend (via CreatePostCard → api.createPost)
     // Just prepend it to the feed — do NOT call createPost() again here (that would double-post)
+    const isCloudinary = newPost.image_url && newPost.image_url.includes('cloudinary');
     setToast({
       type: 'success',
       message: 'Post Published Successfully!',
-      details: newPost.image_url ? 'Your media has been uploaded to Cloudinary and is now live.' : 'Your update is now live in the feed.'
+      details: newPost.image_url 
+        ? (isCloudinary ? 'Your media has been uploaded to Cloudinary CDN and is now live.' : 'Your media has been uploaded and stored securely.')
+        : 'Your update is now live in the feed.'
     });
     setPosts((prev) => [newPost, ...prev]);
   };

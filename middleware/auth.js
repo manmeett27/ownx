@@ -76,7 +76,49 @@ async function authenticateUser(req, res, next) {
   }
 }
 
+/**
+ * Optional Authentication Middleware
+ * If JWT is present and valid, attaches user to req.user.
+ * If not present or invalid, proceeds without failing.
+ */
+async function optionalAuthenticateUser(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next();
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) return next();
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return next();
+    }
+
+    const userId = decoded.user_id || decoded.userId;
+    if (!userId) return next();
+
+    const userResult = await pool.query(
+      "SELECT user_id, username, name, bio, profile_pic, location_str, latitude, longitude, created_at FROM users WHERE user_id = $1",
+      [userId]
+    );
+
+    if (userResult.rows && userResult.rows.length > 0) {
+      req.user = userResult.rows[0];
+      req.userId = userResult.rows[0].user_id;
+    }
+    next();
+  } catch (err) {
+    // Silently continue without authenticated user
+    next();
+  }
+}
+
 module.exports = {
   authenticateUser,
+  optionalAuthenticateUser,
   JWT_SECRET
 };

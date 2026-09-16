@@ -3,7 +3,7 @@ import { Send, Image as ImageIcon, Video, X, MapPin, RefreshCw, AlertCircle } fr
 import GlassCard from '../common/GlassCard';
 import GlassButton from '../common/GlassButton';
 import { useAuth } from '../../context/AuthContext';
-import { createPost } from '../../services/api';
+import { createPost, resolveMediaUrl } from '../../services/api';
 import { getRealUserLocation } from '../../services/locationService';
 
 export default function CreatePostCard({ onPostCreated }) {
@@ -154,7 +154,7 @@ export default function CreatePostCard({ onPostCreated }) {
           >
             {user?.profile_pic ? (
               <img
-                src={user.profile_pic}
+                src={resolveMediaUrl(user.profile_pic)}
                 alt={user.username}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 onError={(e) => { e.target.style.display = 'none'; }}

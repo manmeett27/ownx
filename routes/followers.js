@@ -19,11 +19,12 @@ router.post("/follow", async (req, res) => {
             `
             INSERT INTO followers (user_id, follower_user_id)
             VALUES ($1, $2)
+            ON CONFLICT (user_id, follower_user_id) DO NOTHING
             RETURNING *
             `,
             [user_id, follower_user_id]
         );
-        res.status(201).json({ message: "Successfully followed user", follower: result.rows[0] });
+        res.status(201).json({ message: "Successfully followed user", follower: result.rows[0] || { user_id: Number(user_id), follower_user_id: Number(follower_user_id) } });
     } catch (err) {
         console.error("Error following user:", err.message);
         res.status(500).json({ error: "Failed to follow user" });

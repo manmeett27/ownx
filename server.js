@@ -152,6 +152,27 @@ const initializeDatabase = async () => {
             );
         `);
 
+        await pool.query(`
+            INSERT INTO followers (follower_id, user_id, follower_user_id)
+            VALUES (1, 1, 2)
+            ON CONFLICT (user_id, follower_user_id) DO NOTHING;
+        `);
+
+        // Ensure baseline users and sample post exist for relational stability
+        await pool.query(`
+            INSERT INTO users (user_id, username, password_hash, name, bio, location_id)
+            VALUES 
+                (1, 'Alice_System', '$2b$10$80UId0aZk0LcXnuJ497ge.lBGCyYa5WrXkj1CFZzhsY1g2Vrle36.', 'Alice Spatial', 'Community Founder & Designer', 1),
+                (2, 'Bob_System', '$2b$10$80UId0aZk0LcXnuJ497ge.lBGCyYa5WrXkj1CFZzhsY1g2Vrle36.', 'Bob Reynolds', 'Community Lead & Developer', 2)
+            ON CONFLICT (user_id) DO NOTHING;
+        `);
+
+        await pool.query(`
+            INSERT INTO posts (post_id, user_id, caption, image_url, post_type)
+            VALUES (1, 1, 'Welcome to OWNX - Explore the social feed, reels, and profiles!', 'media/images/healthy_food.png', 'image')
+            ON CONFLICT (post_id) DO NOTHING;
+        `);
+
         console.log("OWNX database tables initialized (users, locations, interests, posts, comments, likes, shares, followers)");
     } catch (err) {
         console.error("Error initializing database tables:", err.message);
@@ -162,16 +183,17 @@ pool.query(
     "SELECT NOW()",
     async (err, result) => {
         if (err) {
-            console.log("Database connection test error:", err);
+            console.log("Database connection notice:", err.message);
         } else {
             console.log("Connected to Database");
-            await initializeDatabase();
         }
+        await initializeDatabase();
     }
 );
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const userRoutes = require("./routes/users");
 const postRoutes = require("./routes/posts");
@@ -184,6 +206,9 @@ app.use(cors());
 // Increased body limit to support base64 uploads for images and videos
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Serve static media (images, videos, local uploads)
+app.use("/media", express.static(path.join(__dirname, "media")));
 
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);

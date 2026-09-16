@@ -139,6 +139,48 @@ export default function Login({ onNavigateRegister, onLoginSuccess }) {
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </GlassButton>
+
+            {/* Quick Demo Autofill Helper */}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => setFormData({ username: 'Alice', password: 'password123' })}
+                title="Autofill Alice credentials"
+                style={{
+                  flex: 1,
+                  padding: '7px 10px',
+                  borderRadius: '8px',
+                  border: '1px dashed rgba(9, 99, 126, 0.3)',
+                  background: 'rgba(255, 255, 255, 0.5)',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: 'var(--primary-dark-teal)',
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+              >
+                Auto: Alice
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ username: 'Bob', password: 'password123' })}
+                title="Autofill Bob credentials"
+                style={{
+                  flex: 1,
+                  padding: '7px 10px',
+                  borderRadius: '8px',
+                  border: '1px dashed rgba(9, 99, 126, 0.3)',
+                  background: 'rgba(255, 255, 255, 0.5)',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: 'var(--primary-dark-teal)',
+                  cursor: 'pointer',
+                  textAlign: 'center'
+                }}
+              >
+                Auto: Bob
+              </button>
+            </div>
           </form>
 
           <div style={{ textAlign: 'center', marginTop: '24px', paddingTop: '18px', borderTop: '1px solid var(--border-glass-subtle)' }}>

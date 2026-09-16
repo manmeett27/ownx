@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, User, LogOut, Bell, Compass, Home, Film, Check, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { resolveMediaUrl } from '../../services/api';
 
 export default function Navbar({ onNavigateAuth, onNavigateHome, onNavigateProfile, onNavigateVideos, activeTab = 'home', onTabChange }) {
   const { user, logout } = useAuth();
@@ -265,7 +266,7 @@ export default function Navbar({ onNavigateAuth, onNavigateHome, onNavigateProfi
               >
                 {user.profile_pic ? (
                   <img
-                    src={user.profile_pic}
+                    src={resolveMediaUrl(user.profile_pic)}
                     alt={user.username}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     onError={(e) => { e.target.style.display = 'none'; }}

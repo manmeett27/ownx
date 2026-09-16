@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Ensure recommendation_engine directory is on sys.path for relative imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI
 import pandas as pd
 import numpy as np

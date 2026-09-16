@@ -1,4 +1,26 @@
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname
+  ? `http://${window.location.hostname}:5000`
+  : 'http://localhost:5000';
+
+/**
+ * Resolves media URLs (Cloudinary CDN, local server uploads, or relative assets)
+ * so they load consistently in the browser without CORS or host mismatches.
+ */
+export function resolveMediaUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    // If it points to the local backend port 5000, align host with current window location
+    if (typeof window !== 'undefined' && url.includes(':5000/media/')) {
+      return url.replace(/https?:\/\/[^/]+:5000/, `http://${window.location.hostname}:5000`);
+    }
+    return url;
+  }
+  // Relative media paths such as "media/images/healthy_food.png" or "/media/..."
+  const cleanPath = url.startsWith('/') ? url.slice(1) : url;
+  const host = typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : 'localhost';
+  return `http://${host}:5000/${cleanPath}`;
+}
 
 /**
  * Returns Authorization headers using stored JWT token.
@@ -28,29 +50,43 @@ export async function checkBackendHealth() {
 }
 
 export async function loginUser(username, password) {
-  const res = await fetch(`${API_BASE_URL}/api/users/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || 'Login failed. Please check your credentials.');
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/users/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || 'Login failed. Please check your credentials.');
+    }
+    return data;
+  } catch (err) {
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      throw new Error(`Cannot connect to backend server at ${API_BASE_URL}. Ensure backend is running (run_backend.bat).`);
+    }
+    throw err;
   }
-  return data;
 }
 
 export async function registerUser(username, password, extraData = {}) {
-  const res = await fetch(`${API_BASE_URL}/api/users/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password, ...extraData })
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || 'Registration failed.');
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/users/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, ...extraData })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || 'Registration failed.');
+    }
+    return data;
+  } catch (err) {
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      throw new Error(`Cannot connect to backend server at ${API_BASE_URL}. Ensure backend is running (run_backend.bat).`);
+    }
+    throw err;
   }
-  return data;
 }
 
 export async function fetchCurrentUser() {
@@ -113,6 +149,14 @@ export async function fetchPosts() {
   const res = await fetch(`${API_BASE_URL}/api/posts`);
   if (!res.ok) {
     throw new Error('Failed to fetch posts');
+  }
+  return res.json();
+}
+
+export async function fetchUserPosts(userId) {
+  const res = await fetch(`${API_BASE_URL}/api/posts/user/${userId}`);
+  if (!res.ok) {
+    throw new Error('Failed to fetch user posts');
   }
   return res.json();
 }

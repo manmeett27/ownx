@@ -3,7 +3,7 @@ import { Image as ImageIcon, Video, MoreHorizontal, MapPin, Calendar, UserPlus, 
 import GlassCard from '../common/GlassCard';
 import PostActions from './PostActions';
 import CommentSection from './CommentSection';
-import { fetchPostComments, createComment, followUser } from '../../services/api';
+import { fetchPostComments, createComment, followUser, resolveMediaUrl } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 export default function PostCard({ post, onFilterAuthor, onNotify }) {
@@ -107,7 +107,7 @@ export default function PostCard({ post, onFilterAuthor, onNotify }) {
           >
             {authorPic ? (
               <img
-                src={authorPic}
+                src={resolveMediaUrl(authorPic)}
                 alt={authorUsername}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 onError={(e) => { e.target.style.display = 'none'; }}
@@ -304,14 +304,14 @@ export default function PostCard({ post, onFilterAuthor, onNotify }) {
         >
           {isVideo ? (
             <video
-              src={post.image_url}
+              src={resolveMediaUrl(post.image_url)}
               controls
               playsInline
               style={{ width: '100%', maxHeight: '440px', objectFit: 'contain' }}
             />
           ) : (
             <img
-              src={post.image_url}
+              src={resolveMediaUrl(post.image_url)}
               alt="Post Media"
               style={{ width: '100%', maxHeight: '440px', objectFit: 'contain' }}
               onError={(e) => {

@@ -92,6 +92,9 @@ try:
     st, resp = http_req("http://127.0.0.1:5000/api/users/login", "POST", {"username": unique_user, "password": "password123"})
     record("/api/users/login", "POST", st, resp, f"Login User {unique_user}")
 
+    auth_token = resp.get("token") if isinstance(resp, dict) else None
+    auth_headers = {"Authorization": f"Bearer {auth_token}"} if auth_token else {}
+
     st, resp = http_req("http://127.0.0.1:5000/api/posts")
     record("/api/posts", "GET", st, resp, "Get All Posts")
 
@@ -103,14 +106,14 @@ try:
         "category_id": 1,
         "interest_id": 1,
         "location_id": 1
-    })
+    }, headers=auth_headers)
     record("/api/posts", "POST", st, resp, "Create Valid Post")
 
     st, resp = http_req("http://127.0.0.1:5000/api/posts", "POST", {
         "user_id": 1,
         "caption": "You idiot shut up!",
         "image_url": "media/images/healthy_food.png"
-    })
+    }, headers=auth_headers)
     record("/api/posts (Inappropriate Caption)", "POST", st, resp, "Moderation rejection test")
 
     st, resp = http_req("http://127.0.0.1:5000/api/posts/1/comments")
@@ -119,7 +122,7 @@ try:
     st, resp = http_req("http://127.0.0.1:5000/api/posts/1/comments", "POST", {
         "username": unique_user,
         "content": "Great post! Really looking forward to more updates."
-    })
+    }, headers=auth_headers)
     record("/api/posts/1/comments", "POST", st, resp, "Create Comment")
 
     st, resp = http_req("http://127.0.0.1:5000/api/followers/follow", "POST", {"user_id": 1, "follower_user_id": 2})

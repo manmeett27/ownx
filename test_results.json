@@ -6,7 +6,8 @@
     "result": "PASS",
     "response": {
       "message": "OWNX Backend Running",
-      "status": "online"
+      "status": "online",
+      "version": "2.0.0"
     },
     "notes": "Node Backend Root"
   },
@@ -17,40 +18,224 @@
     "result": "PASS",
     "response": [
       {
-        "user_id": 3,
-        "username": "user_1788698779",
-        "location_id": 1,
-        "created_at": "2026-09-06T07:16:20.277Z"
+        "user_id": 12,
+        "username": "test_1789592534168",
+        "name": "Test User",
+        "bio": null,
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:32:15.878Z"
       },
       {
-        "user_id": 4,
-        "username": "Alice",
-        "location_id": 1,
-        "created_at": "2026-09-06T07:18:28.269Z"
+        "user_id": 3,
+        "username": "user_1788698779",
+        "name": "user_1788698779",
+        "bio": null,
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-06T07:16:20.277Z"
       },
       {
         "user_id": 5,
         "username": "Bob",
-        "location_id": 2,
+        "name": "Bob",
+        "bio": null,
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
         "created_at": "2026-09-06T07:18:28.518Z"
       },
       {
         "user_id": 6,
         "username": "Charlie",
-        "location_id": 1,
+        "name": "Charlie",
+        "bio": null,
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
         "created_at": "2026-09-06T07:18:28.811Z"
       },
       {
         "user_id": 7,
         "username": "David",
-        "location_id": 3,
+        "name": "David",
+        "bio": null,
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
         "created_at": "2026-09-06T07:18:28.976Z"
       },
       {
         "user_id": 8,
         "username": "Emma",
-        "location_id": 4,
+        "name": "Emma",
+        "bio": null,
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
         "created_at": "2026-09-06T07:18:29.163Z"
+      },
+      {
+        "user_id": 9,
+        "username": "user_1788698925",
+        "name": "user_1788698925",
+        "bio": null,
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-06T07:18:45.850Z"
+      },
+      {
+        "user_id": 10,
+        "username": "Ankur boy",
+        "name": "Ankur boy",
+        "bio": null,
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-06T07:50:33.253Z"
+      },
+      {
+        "user_id": 11,
+        "username": "esrdfgh",
+        "name": "esrdfgh",
+        "bio": null,
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T05:49:05.759Z"
+      },
+      {
+        "user_id": 13,
+        "username": "user_1789592905",
+        "name": "user_1789592905",
+        "bio": "",
+        "profile_pic": null,
+        "location_str": "",
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:38:26.689Z"
+      },
+      {
+        "user_id": 1,
+        "username": "Alice_System",
+        "name": "Alice System",
+        "bio": "Community Founder",
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:39:02.282Z"
+      },
+      {
+        "user_id": 2,
+        "username": "Bob_System",
+        "name": "Bob System",
+        "bio": "Community Lead",
+        "profile_pic": null,
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:39:02.282Z"
+      },
+      {
+        "user_id": 14,
+        "username": "user_1789592979",
+        "name": "user_1789592979",
+        "bio": "",
+        "profile_pic": null,
+        "location_str": "",
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:39:39.981Z"
+      },
+      {
+        "user_id": 15,
+        "username": "testuser_1789593185692",
+        "name": "Test UI",
+        "bio": "",
+        "profile_pic": null,
+        "location_str": "",
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:43:06.531Z"
+      },
+      {
+        "user_id": 16,
+        "username": "alex_new_user",
+        "name": "alex_new_user",
+        "bio": "",
+        "profile_pic": null,
+        "location_str": "",
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:45:05.179Z"
+      },
+      {
+        "user_id": 18,
+        "username": "user_1789593723403",
+        "name": "Test User 1789593723403",
+        "bio": "",
+        "profile_pic": null,
+        "location_str": "Seattle, WA",
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:52:04.339Z"
+      },
+      {
+        "user_id": 19,
+        "username": "testuser_9921",
+        "name": "Alex Tester",
+        "bio": "",
+        "profile_pic": null,
+        "location_str": "",
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:54:24.128Z"
+      },
+      {
+        "user_id": 20,
+        "username": "user_1789593904",
+        "name": "user_1789593904",
+        "bio": "",
+        "profile_pic": null,
+        "location_str": "",
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T15:55:05.766Z"
+      },
+      {
+        "user_id": 21,
+        "username": "Ankur",
+        "name": "Ankur",
+        "bio": "",
+        "profile_pic": "http://127.0.0.1:5000/media/uploads/media_1789594003686_n8w6lo.jpg",
+        "location_str": "Salangaon, Uttarakhand, India",
+        "latitude": 30.40210715,
+        "longitude": 78.0793258,
+        "created_at": "2026-09-16T15:56:13.026Z"
+      },
+      {
+        "user_id": 4,
+        "username": "Alice",
+        "name": "Alice",
+        "bio": null,
+        "profile_pic": "http://127.0.0.1:5000/media/uploads/media_1789594785843_778sys.jpg",
+        "location_str": null,
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-06T07:18:28.269Z"
       }
     ],
     "notes": "Get All Users"
@@ -61,12 +246,21 @@
     "status": 201,
     "result": "PASS",
     "response": {
-      "user_id": 9,
-      "username": "user_1788698925",
-      "location_id": 1,
-      "created_at": "2026-09-06T07:18:45.850Z"
+      "message": "Registration successful",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyMiwidXNlcm5hbWUiOiJ1c2VyXzE3ODk1OTQ3OTciLCJpYXQiOjE3ODk1OTQ3OTcsImV4cCI6MTc5MDE5OTU5N30.OFsFUZN0e4XR99uvbbY7LzoXXjFgveM5gb7Q_hklyjo",
+      "user": {
+        "user_id": 22,
+        "username": "user_1789594797",
+        "name": "user_1789594797",
+        "bio": "",
+        "profile_pic": null,
+        "location_str": "",
+        "latitude": null,
+        "longitude": null,
+        "created_at": "2026-09-16T16:09:58.353Z"
+      }
     },
-    "notes": "Register User user_1788698925"
+    "notes": "Register User user_1789594797"
   },
   {
     "endpoint": "/api/users/login",
@@ -75,14 +269,22 @@
     "result": "PASS",
     "response": {
       "message": "Login successful",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyMiwidXNlcm5hbWUiOiJ1c2VyXzE3ODk1OTQ3OTciLCJpYXQiOjE3ODk1OTQ3OTcsImV4cCI6MTc5MDE5OTU5N30.OFsFUZN0e4XR99uvbbY7LzoXXjFgveM5gb7Q_hklyjo",
       "user": {
-        "user_id": 9,
-        "username": "user_1788698925",
-        "location_id": 1,
-        "created_at": "2026-09-06T07:18:45.850Z"
+        "user_id": 22,
+        "username": "user_1789594797",
+        "location_id": null,
+        "created_at": "2026-09-16T16:09:58.353Z",
+        "name": "user_1789594797",
+        "bio": "",
+        "profile_pic": null,
+        "profile_image_url": null,
+        "location_str": "",
+        "latitude": null,
+        "longitude": null
       }
     },
-    "notes": "Login User user_1788698925"
+    "notes": "Login User user_1789594797"
   },
   {
     "endpoint": "/api/posts",
@@ -91,16 +293,137 @@
     "result": "PASS",
     "response": [
       {
+        "post_id": 14,
+        "user_id": 4,
+        "caption": "Test Multer Post at 2026-09-16T21:39:45.521Z",
+        "image_url": "http://127.0.0.1:5000/media/uploads/media_1789594785637_ud59qb.jpg",
+        "post_type": "image",
+        "created_at": "2026-09-16T16:09:46.368Z",
+        "location_str": "",
+        "name": "Alice",
+        "username": "Alice",
+        "profile_pic": "http://127.0.0.1:5000/media/uploads/media_1789594785843_778sys.jpg",
+        "author": {
+          "user_id": 4,
+          "name": "Alice",
+          "username": "Alice",
+          "profile_pic": "http://127.0.0.1:5000/media/uploads/media_1789594785843_778sys.jpg",
+          "location_str": ""
+        }
+      },
+      {
+        "post_id": 13,
+        "user_id": 21,
+        "caption": "wonderful experience!",
+        "image_url": "http://127.0.0.1:5000/media/uploads/media_1789594084539_3ckswb.jpg",
+        "post_type": "image",
+        "created_at": "2026-09-16T15:58:05.264Z",
+        "location_str": "Salangaon, Uttarakhand, India",
+        "name": "Ankur",
+        "username": "Ankur",
+        "profile_pic": "http://127.0.0.1:5000/media/uploads/media_1789594003686_n8w6lo.jpg",
+        "author": {
+          "user_id": 21,
+          "name": "Ankur",
+          "username": "Ankur",
+          "profile_pic": "http://127.0.0.1:5000/media/uploads/media_1789594003686_n8w6lo.jpg",
+          "location_str": "Salangaon, Uttarakhand, India"
+        }
+      },
+      {
+        "post_id": 12,
+        "user_id": 20,
+        "caption": "Enjoying a wonderful tech conference in Lucknow!",
+        "image_url": "media/images/healthy_food.png",
+        "post_type": "image",
+        "created_at": "2026-09-16T15:55:06.136Z",
+        "location_str": "",
+        "name": "user_1789593904",
+        "username": "user_1789593904",
+        "profile_pic": "",
+        "author": {
+          "user_id": 20,
+          "name": "user_1789593904",
+          "username": "user_1789593904",
+          "profile_pic": "",
+          "location_str": ""
+        }
+      },
+      {
+        "post_id": 11,
+        "user_id": 14,
+        "caption": "Enjoying a wonderful tech conference in Lucknow!",
+        "image_url": "media/images/healthy_food.png",
+        "post_type": "image",
+        "created_at": "2026-09-16T15:39:40.356Z",
+        "location_str": "",
+        "name": "user_1789592979",
+        "username": "user_1789592979",
+        "profile_pic": "",
+        "author": {
+          "user_id": 14,
+          "name": "user_1789592979",
+          "username": "user_1789592979",
+          "profile_pic": "",
+          "location_str": ""
+        }
+      },
+      {
+        "post_id": 1,
+        "user_id": 1,
+        "caption": "Welcome to OWNX - Explore the social feed, reels, and profiles!",
+        "image_url": "media/images/healthy_food.png",
+        "post_type": "image",
+        "created_at": "2026-09-16T15:39:02.398Z",
+        "location_str": "",
+        "name": "Alice System",
+        "username": "Alice_System",
+        "profile_pic": "",
+        "author": {
+          "user_id": 1,
+          "name": "Alice System",
+          "username": "Alice_System",
+          "profile_pic": "",
+          "location_str": ""
+        }
+      },
+      {
+        "post_id": 10,
+        "user_id": 13,
+        "caption": "Enjoying a wonderful tech conference in Lucknow!",
+        "image_url": "media/images/healthy_food.png",
+        "post_type": "image",
+        "created_at": "2026-09-16T15:38:27.331Z",
+        "location_str": "",
+        "name": "user_1789592905",
+        "username": "user_1789592905",
+        "profile_pic": "",
+        "author": {
+          "user_id": 13,
+          "name": "user_1789592905",
+          "username": "user_1789592905",
+          "profile_pic": "",
+          "location_str": ""
+        }
+      },
+      {
         "post_id": 8,
         "user_id": 8,
         "caption": "\ud83c\udfcb\ufe0f\u200d\u2640\ufe0f Morning 5km run completed in Bangalore. Consistency is key!",
         "image_url": "media/images/healthy_food.png",
         "post_type": "image",
-        "category_id": 5,
-        "interest_id": 5,
-        "location_id": 4,
         "created_at": "2026-09-06T07:18:30.618Z",
-        "username": "Emma"
+        "location_str": "",
+        "name": "Emma",
+        "username": "Emma",
+        "profile_pic": "",
+        "author": {
+          "user_id": 8,
+          "name": "Emma",
+          "username": "Emma",
+          "profile_pic": "",
+          "location_str": ""
+        }
       },
       {
         "post_id": 7,
@@ -108,11 +431,18 @@
         "caption": "\ud83c\udfd6\ufe0f Sunset views from Marine Drive, Mumbai! Loving this sea breeze.",
         "image_url": "media/images/food.png",
         "post_type": "image",
-        "category_id": 3,
-        "interest_id": 3,
-        "location_id": 3,
         "created_at": "2026-09-06T07:18:30.515Z",
-        "username": "David"
+        "location_str": "",
+        "name": "David",
+        "username": "David",
+        "profile_pic": "",
+        "author": {
+          "user_id": 7,
+          "name": "David",
+          "username": "David",
+          "profile_pic": "",
+          "location_str": ""
+        }
       },
       {
         "post_id": 6,
@@ -120,11 +450,18 @@
         "caption": "\ud83c\udfae Late night gaming session! Anyone up for some multiplayer strategy games?",
         "image_url": "media/images/healthy_food.png",
         "post_type": "image",
-        "category_id": 4,
-        "interest_id": 4,
-        "location_id": 1,
         "created_at": "2026-09-06T07:18:30.334Z",
-        "username": "Charlie"
+        "location_str": "",
+        "name": "Charlie",
+        "username": "Charlie",
+        "profile_pic": "",
+        "author": {
+          "user_id": 6,
+          "name": "Charlie",
+          "username": "Charlie",
+          "profile_pic": "",
+          "location_str": ""
+        }
       },
       {
         "post_id": 5,
@@ -132,11 +469,18 @@
         "caption": "\ud83e\udd57 Exploring organic vegan salad spots in Delhi! Health is wealth.",
         "image_url": "media/images/food.png",
         "post_type": "image",
-        "category_id": 2,
-        "interest_id": 2,
-        "location_id": 2,
         "created_at": "2026-09-06T07:18:29.735Z",
-        "username": "Bob"
+        "location_str": "",
+        "name": "Bob",
+        "username": "Bob",
+        "profile_pic": "",
+        "author": {
+          "user_id": 5,
+          "name": "Bob",
+          "username": "Bob",
+          "profile_pic": "",
+          "location_str": ""
+        }
       },
       {
         "post_id": 4,
@@ -144,11 +488,18 @@
         "caption": "\ud83d\ude80 Just launched our new AI microservices architecture! Powered by Node.js and FastAPI.",
         "image_url": "media/images/healthy_food.png",
         "post_type": "image",
-        "category_id": 1,
-        "interest_id": 1,
-        "location_id": 1,
         "created_at": "2026-09-06T07:18:29.629Z",
-        "username": "Alice"
+        "location_str": "",
+        "name": "Alice",
+        "username": "Alice",
+        "profile_pic": "http://127.0.0.1:5000/media/uploads/media_1789594785843_778sys.jpg",
+        "author": {
+          "user_id": 4,
+          "name": "Alice",
+          "username": "Alice",
+          "profile_pic": "http://127.0.0.1:5000/media/uploads/media_1789594785843_778sys.jpg",
+          "location_str": ""
+        }
       }
     ],
     "notes": "Get All Posts"
@@ -159,15 +510,23 @@
     "status": 201,
     "result": "PASS",
     "response": {
-      "post_id": 3,
-      "user_id": 1,
+      "post_id": 15,
+      "user_id": 22,
       "caption": "Enjoying a wonderful tech conference in Lucknow!",
       "image_url": "media/images/healthy_food.png",
       "post_type": "image",
-      "category_id": 1,
-      "interest_id": 1,
-      "location_id": 1,
-      "created_at": "2026-09-06T12:48:46.294Z"
+      "created_at": "2026-09-16T16:09:58.720Z",
+      "location_str": "",
+      "name": "user_1789594797",
+      "username": "user_1789594797",
+      "profile_pic": "",
+      "author": {
+        "user_id": 22,
+        "name": "user_1789594797",
+        "username": "user_1789594797",
+        "profile_pic": "",
+        "location_str": ""
+      }
     },
     "notes": "Create Valid Post"
   },
@@ -196,7 +555,22 @@
     "method": "GET",
     "status": 200,
     "result": "PASS",
-    "response": [],
+    "response": [
+      {
+        "comment_id": 12,
+        "post_id": 1,
+        "username": "user_1789592979",
+        "content": "Great post! Really looking forward to more updates.",
+        "created_at": "2026-09-16T15:39:40.656Z"
+      },
+      {
+        "comment_id": 13,
+        "post_id": 1,
+        "username": "user_1789593904",
+        "content": "Great post! Really looking forward to more updates.",
+        "created_at": "2026-09-16T15:55:06.469Z"
+      }
+    ],
     "notes": "Get Comments for Post 1"
   },
   {
@@ -205,11 +579,14 @@
     "status": 201,
     "result": "PASS",
     "response": {
-      "comment_id": 2,
-      "post_id": 1,
-      "username": "user_1788698925",
-      "content": "Great post! Really looking forward to more updates.",
-      "created_at": "2026-09-06T12:48:47.565Z"
+      "message": "Comment added successfully",
+      "comment": {
+        "comment_id": 14,
+        "post_id": 1,
+        "username": "user_1789594797",
+        "content": "Great post! Really looking forward to more updates.",
+        "created_at": "2026-09-16T16:09:59.043Z"
+      }
     },
     "notes": "Create Comment"
   },
@@ -221,10 +598,8 @@
     "response": {
       "message": "Successfully followed user",
       "follower": {
-        "follower_id": 1,
         "user_id": 1,
-        "follower_user_id": 2,
-        "created_at": "2026-09-06T12:48:39.506Z"
+        "follower_user_id": 2
       }
     },
     "notes": "Follow User"
@@ -234,7 +609,15 @@
     "method": "GET",
     "status": 200,
     "result": "PASS",
-    "response": [],
+    "response": [
+      {
+        "follower_id": 1,
+        "user_id": 1,
+        "follower_user_id": 2,
+        "created_at": "2026-09-16T15:39:38.426Z",
+        "username": "Bob_System"
+      }
+    ],
     "notes": "Get Followers of User 1"
   },
   {
@@ -242,7 +625,15 @@
     "method": "GET",
     "status": 200,
     "result": "PASS",
-    "response": [],
+    "response": [
+      {
+        "follower_id": 1,
+        "user_id": 1,
+        "follower_user_id": 2,
+        "created_at": "2026-09-16T15:39:38.426Z",
+        "username": "Alice_System"
+      }
+    ],
     "notes": "Get Following of User 2"
   },
   {
@@ -367,11 +758,11 @@
       "location": "Lucknow",
       "recommendation_type": "personalized",
       "recommended_post_ids": [
-        1006,
-        1187,
-        1166,
-        1087,
-        1023
+        1114,
+        1068,
+        1133,
+        1050,
+        1103
       ]
     },
     "notes": "Implicit ALS Feed Recommendation"

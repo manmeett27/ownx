@@ -74,7 +74,22 @@ router.post("/register", async (req, res) => {
     return res.status(400).json({ error: "Username and password are required" });
   }
 
+  const trimmedUsername = String(username).trim();
+  if (trimmedUsername.length < 3) {
+    return res.status(400).json({ error: "Username must be at least 3 characters long." });
+  }
+
   try {
+    // Check if user already exists (case-insensitive)
+    const existing = await pool.query(
+      "SELECT user_id FROM users WHERE LOWER(username) = LOWER($1)",
+      [trimmedUsername]
+    );
+
+    if (existing.rows && existing.rows.length > 0) {
+      return res.status(400).json({ error: "Username already taken. Please choose a different username." });
+    }
+
     // Hash password if not already hashed
     let hashedPassword = rawPassword;
     if (!rawPassword.startsWith("$2b$") && !rawPassword.startsWith("$2a$")) {
@@ -87,9 +102,9 @@ router.post("/register", async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING user_id, username, name, bio, profile_pic, location_str, latitude, longitude, created_at
     `, [
-      username.trim(), 
+      trimmedUsername, 
       hashedPassword, 
-      name ? name.trim() : username.trim(), 
+      name ? String(name).trim() : trimmedUsername, 
       bio || "", 
       location_str || "", 
       latitude || null, 
@@ -106,10 +121,17 @@ router.post("/register", async (req, res) => {
     });
   } catch (err) {
     console.error("Error registering user:", err.message);
-    if (err.code === "23505" || err.message.includes("already exists")) {
+    if (
+      err.code === "23505" ||
+      (err.message && (
+        err.message.includes("unique constraint") ||
+        err.message.includes("duplicate key") ||
+        err.message.includes("already exists")
+      ))
+    ) {
       return res.status(400).json({ error: "Username already taken. Please choose a different username." });
     }
-    res.status(500).json({ error: "Failed to register user" });
+    res.status(500).json({ error: "Failed to register user: " + (err.message || "Unknown server error") });
   }
 });
 
@@ -121,10 +143,12 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ error: "Username and password are required" });
   }
 
+  const trimmedUsername = String(username).trim();
+
   try {
     const result = await pool.query(
       "SELECT * FROM users WHERE LOWER(username) = LOWER($1)",
-      [username.trim()]
+      [trimmedUsername]
     );
 
     if (!result.rows || result.rows.length === 0) {
@@ -134,17 +158,18 @@ router.post("/login", async (req, res) => {
     const user = result.rows[0];
     let isValid = false;
 
-    if (user.password_hash && (user.password_hash.startsWith("$2b$") || user.password_hash.startsWith("$2a$"))) {
-      isValid = await bcrypt.compare(password, user.password_hash);
-    } else {
-      isValid = (password === user.password_hash);
+    const storedHash = user.password_hash || user.encrypted_password;
+    if (storedHash && (storedHash.startsWith("$2b$") || storedHash.startsWith("$2a$"))) {
+      isValid = await bcrypt.compare(password, storedHash);
+    } else if (storedHash) {
+      isValid = (password === storedHash);
     }
 
     if (!isValid) {
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
-    const { password_hash, ...userProfile } = user;
+    const { password_hash, encrypted_password, ...userProfile } = user;
     const token = generateToken(userProfile);
 
     res.json({
@@ -154,12 +179,23 @@ router.post("/login", async (req, res) => {
     });
   } catch (err) {
     console.error("Error logging in:", err.message);
-    res.status(500).json({ error: "Failed to log in" });
+    res.status(500).json({ error: "Failed to log in: " + (err.message || "Unknown server error") });
   }
 });
 
 // PUT /api/users/profile/photo - Upload profile photo to Cloudinary and update user record
-router.put("/profile/photo", authenticateUser, upload.single("photo"), async (req, res) => {
+router.put("/profile/photo", authenticateUser, (req, res, next) => {
+  upload.any()(req, res, (err) => {
+    if (err) {
+      console.error("Multer profile photo upload error:", err.message);
+      return res.status(400).json({ error: err.message });
+    }
+    if (req.files && req.files.length > 0) {
+      req.file = req.files.find(f => f.fieldname === "photo" || f.fieldname === "image" || f.fieldname === "file") || req.files[0];
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No photo file provided." });
@@ -173,17 +209,18 @@ router.put("/profile/photo", authenticateUser, upload.single("photo"), async (re
       ]
     });
 
-    const photoUrl = uploadResult.secure_url;
+    const photoUrl = uploadResult.secure_url || uploadResult.url;
 
-    // Update database record for authenticated user
+    // Update database record for authenticated user across both profile columns
     const result = await pool.query(
-      "UPDATE users SET profile_pic = $1 WHERE user_id = $2 RETURNING user_id, username, name, bio, profile_pic, location_str, latitude, longitude, created_at",
+      "UPDATE users SET profile_pic = $1, profile_image_url = $1 WHERE user_id = $2 RETURNING user_id, username, name, bio, profile_pic, profile_image_url, location_str, latitude, longitude, created_at",
       [photoUrl, req.user.user_id]
     );
 
     res.json({
       message: "Profile photo updated successfully",
       profile_pic: photoUrl,
+      provider: uploadResult.provider || "local",
       user: result.rows[0]
     });
   } catch (err) {
