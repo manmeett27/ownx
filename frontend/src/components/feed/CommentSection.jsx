@@ -15,7 +15,7 @@ export default function CommentSection({ comments = [], onAddComment }) {
     setLoading(true);
     setErrorAlert(null);
 
-    const activeUser = user ? user.username : 'guest_user';
+    const activeUser = user ? user.username : 'community_guest';
 
     try {
       await onAddComment(activeUser, newComment.trim());
@@ -29,34 +29,48 @@ export default function CommentSection({ comments = [], onAddComment }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', animation: 'fadeIn 0.3s ease' }}>
-      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', letterSpacing: '0.3px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--border-glass-subtle)', animation: 'fadeIn 0.25s ease' }}>
+      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--primary-dark-teal)', letterSpacing: '0.2px' }}>
         Comments ({comments.length})
       </div>
 
       {comments.length === 0 ? (
-        <div style={{ fontSize: '13px', color: 'var(--text-dim)', fontStyle: 'italic', padding: '8px 0' }}>
-          No comments yet. Be the first to start the conversation!
+        <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '6px 0' }}>
+          No comments yet. Be the first to join the conversation!
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '220px', overflowY: 'auto', paddingRight: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '240px', overflowY: 'auto', paddingRight: '4px' }}>
           {comments.map((c, idx) => (
             <div
               key={c.comment_id || idx}
               style={{
                 display: 'flex',
                 gap: '10px',
-                padding: '10px 14px',
-                borderRadius: '12px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.06)'
+                padding: '10px 12px',
+                borderRadius: '10px',
+                background: 'rgba(235, 244, 246, 0.65)',
+                border: '1px solid var(--border-glass-subtle)'
               }}
             >
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--brand-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', color: '#FFFFFF', flexShrink: 0 }}>
+              <div
+                style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  background: 'var(--primary-dark-teal)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  color: '#FFFFFF',
+                  flexShrink: 0
+                }}
+              >
                 {(c.username || 'U').charAt(0).toUpperCase()}
               </div>
               <div style={{ flexGrow: 1 }}>
-                <div style={{ fontSize: '12px', fontWeight: '700', color: '#FFFFFF', marginBottom: '2px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--primary-dark-teal)', marginBottom: '2px' }}>
                   @{c.username}
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-main)', lineHeight: '1.4' }}>
@@ -71,38 +85,39 @@ export default function CommentSection({ comments = [], onAddComment }) {
       {errorAlert && (
         <div
           style={{
-            padding: '10px 14px',
-            borderRadius: '10px',
-            background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.35)',
-            color: '#FCA5A5',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            background: 'rgba(220, 38, 38, 0.08)',
+            border: '1px solid rgba(220, 38, 38, 0.3)',
+            color: '#991B1B',
             fontSize: '12px',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}
         >
-          <ShieldAlert size={16} style={{ flexShrink: 0 }} />
-          <span><strong>Blocked by AI Moderator:</strong> {errorAlert}</span>
+          <ShieldAlert size={16} color="#DC2626" style={{ flexShrink: 0 }} />
+          <span><strong>AI Shield Notice:</strong> {errorAlert}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
         <input
           type="text"
           className="glass-input"
-          style={{ paddingLeft: '16px', height: '42px', fontSize: '13px' }}
+          style={{ paddingLeft: '14px', height: '38px', fontSize: '13px' }}
           placeholder="Write a comment..."
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
         />
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !newComment.trim()}
           className="glass-button"
-          style={{ padding: '0 16px', height: '42px', fontSize: '13px' }}
+          style={{ padding: '0 16px', height: '38px', fontSize: '13px' }}
+          aria-label="Send Comment"
         >
-          <Send size={16} />
+          <Send size={15} />
         </button>
       </form>
     </div>

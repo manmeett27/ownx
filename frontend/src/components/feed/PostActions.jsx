@@ -1,33 +1,55 @@
 import React, { useState } from 'react';
 import { Heart, MessageSquare, Share2, Bookmark } from 'lucide-react';
 
-export default function PostActions({ commentCount, onToggleComments, isCommentsOpen }) {
+export default function PostActions({ postId, commentCount, onToggleComments, isCommentsOpen, onNotify }) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(12);
   const [bookmarked, setBookmarked] = useState(false);
 
   const handleLike = () => {
-    setLiked(!liked);
-    setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+    const nextLiked = !liked;
+    setLiked(nextLiked);
+    setLikeCount(nextLiked ? likeCount + 1 : likeCount - 1);
   };
 
   const handleShare = () => {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
-      alert('Post link copied to clipboard!');
+      navigator.clipboard.writeText(window.location.origin + `/#post-${postId || ''}`);
+    }
+    if (onNotify) {
+      onNotify({ type: 'success', message: 'Post link copied to clipboard!' });
+    }
+  };
+
+  const handleBookmark = () => {
+    const nextState = !bookmarked;
+    setBookmarked(nextState);
+    if (onNotify) {
+      onNotify({
+        type: 'success',
+        message: nextState ? 'Post added to your bookmarks' : 'Post removed from bookmarks'
+      });
     }
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid var(--border-glass-subtle)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         {/* Like Button */}
         <button
           onClick={handleLike}
           className={`glass-icon-button ${liked ? 'active' : ''}`}
-          style={{ gap: '6px', width: 'auto', padding: '0 14px', color: liked ? '#EF4444' : 'var(--text-muted)' }}
+          style={{
+            gap: '6px',
+            width: 'auto',
+            padding: '0 12px',
+            color: liked ? '#DC2626' : 'var(--text-muted)',
+            borderColor: liked ? 'rgba(220, 38, 38, 0.3)' : undefined,
+            background: liked ? 'rgba(220, 38, 38, 0.08)' : undefined
+          }}
+          aria-label="Like Post"
         >
-          <Heart size={18} fill={liked ? '#EF4444' : 'none'} color={liked ? '#EF4444' : 'currentColor'} />
+          <Heart size={16} fill={liked ? '#DC2626' : 'none'} color={liked ? '#DC2626' : 'currentColor'} />
           <span style={{ fontSize: '13px', fontWeight: '600' }}>{likeCount}</span>
         </button>
 
@@ -35,9 +57,10 @@ export default function PostActions({ commentCount, onToggleComments, isComments
         <button
           onClick={onToggleComments}
           className={`glass-icon-button ${isCommentsOpen ? 'active' : ''}`}
-          style={{ gap: '6px', width: 'auto', padding: '0 14px' }}
+          style={{ gap: '6px', width: 'auto', padding: '0 12px' }}
+          aria-label="Toggle Comments"
         >
-          <MessageSquare size={18} />
+          <MessageSquare size={16} />
           <span style={{ fontSize: '13px', fontWeight: '600' }}>{commentCount}</span>
         </button>
 
@@ -46,18 +69,23 @@ export default function PostActions({ commentCount, onToggleComments, isComments
           onClick={handleShare}
           className="glass-icon-button"
           title="Share Post"
+          aria-label="Share Post"
         >
-          <Share2 size={18} />
+          <Share2 size={16} />
         </button>
       </div>
 
       {/* Bookmark Button */}
       <button
-        onClick={() => setBookmarked(!bookmarked)}
+        onClick={handleBookmark}
         className={`glass-icon-button ${bookmarked ? 'active' : ''}`}
-        title="Bookmark"
+        title={bookmarked ? 'Remove Bookmark' : 'Save to Bookmarks'}
+        aria-label="Save to Bookmarks"
+        style={{
+          color: bookmarked ? 'var(--primary-dark-teal)' : undefined
+        }}
       >
-        <Bookmark size={18} fill={bookmarked ? 'var(--brand-primary)' : 'none'} />
+        <Bookmark size={16} fill={bookmarked ? 'var(--primary-dark-teal)' : 'none'} />
       </button>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, MapPin, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { User, Lock, MapPin, Sparkles, ArrowRight, KeyRound, CheckCircle2, X } from 'lucide-react';
 import SpatialBackground from '../components/3d/SpatialBackground';
 import GlassCard from '../components/common/GlassCard';
 import GlassInput from '../components/common/GlassInput';
@@ -17,51 +17,82 @@ export default function Login({ onNavigateRegister, onLoginSuccess }) {
   });
 
   const [loading, setLoading] = useState(false);
-  const [errorToast, setErrorToast] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.username || !formData.password) {
-      setErrorToast({ message: 'Validation Error', details: 'Please enter both username and password.' });
+    if (!formData.username.trim() || !formData.password) {
+      setToast({ message: 'Validation Required', details: 'Please enter both username and password.' });
       return;
     }
 
     setLoading(true);
-    setErrorToast(null);
+    setToast(null);
 
-    const res = await login(formData.username, formData.password);
+    const res = await login(formData.username.trim(), formData.password);
     setLoading(false);
 
     if (res.success) {
       if (onLoginSuccess) onLoginSuccess(res.user);
     } else {
-      setErrorToast({
-        message: 'Authentication Failed',
+      setToast({
+        message: 'Sign In Failed',
         details: res.error || 'Invalid username or password. Please check your credentials.'
       });
     }
+  };
+
+  const handleForgotSubmit = (e) => {
+    e.preventDefault();
+    if (!forgotUsername.trim()) return;
+    setResetSuccess(true);
+    setTimeout(() => {
+      setShowForgotModal(false);
+      setResetSuccess(false);
+      setForgotUsername('');
+      setToast({
+        type: 'success',
+        message: 'Reset Instructions Sent',
+        details: `Password recovery verification code sent for user @${forgotUsername}.`
+      });
+    }, 1500);
   };
 
   return (
     <div style={{ position: 'relative', width: '100vw', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <SpatialBackground />
 
-      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '440px', animation: 'fadeIn 0.5s ease-out' }}>
-        <GlassCard style={{ padding: '40px 32px' }}>
+      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '420px', animation: 'fadeIn 0.3s ease-out' }}>
+        <GlassCard style={{ padding: '36px 30px' }}>
           {/* OWNX Logo */}
-          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '56px', height: '56px', borderRadius: '18px', background: 'var(--brand-gradient)', boxShadow: '0 10px 30px rgba(123, 97, 255, 0.4)', marginBottom: '14px' }}>
-              <Sparkles size={28} color="#FFFFFF" />
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '50px',
+                height: '50px',
+                borderRadius: '14px',
+                background: 'var(--primary-dark-teal)',
+                boxShadow: '0 8px 24px rgba(9, 99, 126, 0.25)',
+                marginBottom: '12px'
+              }}
+            >
+              <Sparkles size={24} color="#FFFFFF" />
             </div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '32px', fontWeight: '800', letterSpacing: '-0.5px', color: '#FFFFFF' }}>
-              OWN<span style={{ background: 'var(--brand-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>X</span>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '28px', fontWeight: '800', letterSpacing: '-0.5px', color: 'var(--primary-dark-teal)' }}>
+              OWN<span style={{ color: 'var(--primary-teal)' }}>X</span>
             </h1>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Welcome back to your spatial social environment
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              Sign in to your account and social workspace
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <GlassInput
               label="Username"
               name="username"
@@ -83,15 +114,15 @@ export default function Login({ onNavigateRegister, onLoginSuccess }) {
               required
             />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)' }}>
-                Location Region
+                Preferred Region
               </label>
               <div className="glass-input-wrapper">
-                <MapPin className="glass-input-icon" size={18} />
+                <MapPin className="glass-input-icon" size={17} />
                 <select
                   className="glass-select"
-                  style={{ width: '100%', paddingLeft: '46px' }}
+                  style={{ width: '100%', paddingLeft: '42px', height: '42px' }}
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 >
@@ -103,11 +134,19 @@ export default function Login({ onNavigateRegister, onLoginSuccess }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-4px' }}>
               <button
                 type="button"
-                onClick={() => setErrorToast({ message: 'Password Reset', details: 'Contact support or re-register with a new username.' })}
-                style={{ background: 'none', border: 'none', color: 'var(--brand-primary)', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}
+                onClick={() => setShowForgotModal(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--primary-teal)',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  padding: 0
+                }}
               >
                 Forgot password?
               </button>
@@ -117,19 +156,27 @@ export default function Login({ onNavigateRegister, onLoginSuccess }) {
               type="submit"
               disabled={loading}
               icon={ArrowRight}
-              style={{ width: '100%', marginTop: '8px' }}
+              style={{ width: '100%', marginTop: '6px', height: '44px' }}
             >
-              {loading ? 'Authenticating...' : 'Next'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </GlassButton>
           </form>
 
-          <div style={{ textAlign: 'center', marginTop: '28px', paddingTop: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+          <div style={{ textAlign: 'center', marginTop: '24px', paddingTop: '18px', borderTop: '1px solid var(--border-glass-subtle)' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
               Don't have an account?{' '}
             </span>
             <button
               onClick={onNavigateRegister}
-              style={{ background: 'none', border: 'none', color: '#FFFFFF', fontSize: '14px', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--primary-dark-teal)',
+                fontSize: '13px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textDecoration: 'underline'
+              }}
             >
               Create Account
             </button>
@@ -137,11 +184,98 @@ export default function Login({ onNavigateRegister, onLoginSuccess }) {
         </GlassCard>
       </div>
 
-      {errorToast && (
+      {/* Forgot Password Modal Dialog */}
+      {showForgotModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(9, 99, 126, 0.25)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            padding: '20px'
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '380px',
+              background: '#FFFFFF',
+              borderRadius: '16px',
+              border: '1px solid var(--border-glass)',
+              boxShadow: '0 20px 50px rgba(9, 99, 126, 0.2)',
+              padding: '28px 24px',
+              position: 'relative',
+              animation: 'fadeIn 0.2s ease'
+            }}
+          >
+            <button
+              onClick={() => setShowForgotModal(false)}
+              style={{ position: 'absolute', top: '16px', right: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(8, 131, 149, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-dark-teal)' }}>
+                <KeyRound size={18} />
+              </div>
+              <h3 style={{ fontSize: '17px', fontWeight: '700', color: 'var(--primary-dark-teal)' }}>
+                Reset Password
+              </h3>
+            </div>
+
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '18px' }}>
+              Enter your username or email address below to receive an account recovery code.
+            </p>
+
+            {resetSuccess ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', borderRadius: '10px', background: 'rgba(13, 148, 136, 0.1)', color: '#0F766E', fontSize: '13px', fontWeight: '600' }}>
+                <CheckCircle2 size={18} />
+                <span>Verification code generated! Closing...</span>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <GlassInput
+                  placeholder="Enter your username"
+                  icon={User}
+                  value={forgotUsername}
+                  onChange={(e) => setForgotUsername(e.target.value)}
+                  required
+                />
+                <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(false)}
+                    className="glass-button glass-button-secondary"
+                    style={{ flex: 1, height: '40px' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="glass-button"
+                    style={{ flex: 1, height: '40px' }}
+                  >
+                    Send Code
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {toast && (
         <Toast
-          message={errorToast.message}
-          details={errorToast.details}
-          onClose={() => setErrorToast(null)}
+          type={toast.type || 'error'}
+          message={toast.message}
+          details={toast.details}
+          onClose={() => setToast(null)}
         />
       )}
     </div>

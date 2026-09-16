@@ -29,25 +29,25 @@ export default function SpatialBackground() {
     };
     window.addEventListener('mousemove', handleMouseMove);
 
-    // Glass Spheres
-    const spheres = Array.from({ length: 14 }, (_, i) => ({
+    // Ambient Orbs tuned to light teal palette
+    const orbs = [
+      { x: width * 0.2, y: height * 0.3, radius: 280, color: 'rgba(122, 178, 178, 0.20)' },
+      { x: width * 0.8, y: height * 0.7, radius: 320, color: 'rgba(8, 131, 149, 0.12)' },
+      { x: width * 0.5, y: height * 0.5, radius: 220, color: 'rgba(9, 99, 126, 0.08)' }
+    ];
+
+    // Floating 3D Translucent Glass Spheres
+    const spheres = Array.from({ length: 12 }, (_, i) => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      radius: Math.random() * 50 + 20,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      alpha: Math.random() * 0.35 + 0.15,
-      hue: i % 2 === 0 ? 260 : 280, // Purple / Violet
+      radius: Math.random() * 45 + 20,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      alpha: Math.random() * 0.3 + 0.15,
+      isPrimary: i % 2 === 0,
       ringAngle: Math.random() * Math.PI * 2,
-      rotationSpeed: (Math.random() - 0.5) * 0.008
+      rotationSpeed: (Math.random() - 0.5) * 0.006
     }));
-
-    // Ambient Orbs
-    const orbs = [
-      { x: width * 0.2, y: height * 0.3, radius: 250, color: 'rgba(123, 97, 255, 0.18)' },
-      { x: width * 0.8, y: height * 0.7, radius: 300, color: 'rgba(160, 68, 255, 0.15)' },
-      { x: width * 0.5, y: height * 0.5, radius: 200, color: 'rgba(0, 242, 254, 0.08)' }
-    ];
 
     let time = 0;
 
@@ -55,9 +55,9 @@ export default function SpatialBackground() {
       time += 0.01;
       ctx.clearRect(0, 0, width, height);
 
-      // Render Ambient Background Glowing Orbs
+      // Render Ambient Background Glowing Orbs (Soft Teal Depth)
       orbs.forEach((orb, idx) => {
-        const pulse = Math.sin(time + idx) * 30;
+        const pulse = Math.sin(time + idx) * 25;
         const gradient = ctx.createRadialGradient(
           orb.x + (mouseX - width / 2) * 0.02 * (idx + 1),
           orb.y + (mouseY - height / 2) * 0.02 * (idx + 1),
@@ -67,7 +67,7 @@ export default function SpatialBackground() {
           orb.radius + pulse
         );
         gradient.addColorStop(0, orb.color);
-        gradient.addColorStop(1, 'rgba(9, 10, 16, 0)');
+        gradient.addColorStop(1, 'rgba(235, 244, 246, 0)');
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(orb.x, orb.y, orb.radius + pulse, 0, Math.PI * 2);
@@ -94,32 +94,33 @@ export default function SpatialBackground() {
         ctx.beginPath();
         ctx.arc(px, py, s.radius, 0, Math.PI * 2);
 
-        // Glass Gradient
+        // Glass Gradient with teal tint
         const glassGrad = ctx.createRadialGradient(
-          px - s.radius * 0.3,
-          py - s.radius * 0.3,
-          s.radius * 0.1,
+          px - s.radius * 0.35,
+          py - s.radius * 0.35,
+          s.radius * 0.05,
           px,
           py,
           s.radius
         );
-        glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.35)');
-        glassGrad.addColorStop(0.4, `hsla(${s.hue}, 80%, 65%, 0.15)`);
-        glassGrad.addColorStop(1, 'rgba(255, 255, 255, 0.03)');
+        glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+        glassGrad.addColorStop(0.4, s.isPrimary ? 'rgba(122, 178, 178, 0.22)' : 'rgba(8, 131, 149, 0.14)');
+        glassGrad.addColorStop(0.8, 'rgba(235, 244, 246, 0.15)');
+        glassGrad.addColorStop(1, 'rgba(122, 178, 178, 0.08)');
 
         ctx.fillStyle = glassGrad;
         ctx.fill();
 
-        // Subtle Glass Highlight Border
-        ctx.lineWidth = 1.2;
-        ctx.strokeStyle = `rgba(255, 255, 255, ${s.alpha})`;
+        // Subtle Glass Highlight Rim Border
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = `rgba(122, 178, 178, ${s.alpha})`;
         ctx.stroke();
 
-        // Inner Light Reflection Arc
+        // Inner Light Reflection Arc (Realistic Glass Highlight)
         ctx.beginPath();
-        ctx.arc(px - s.radius * 0.2, py - s.radius * 0.2, s.radius * 0.6, Math.PI * 1.1, Math.PI * 1.6);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.lineWidth = 2;
+        ctx.arc(px - s.radius * 0.2, py - s.radius * 0.2, s.radius * 0.6, Math.PI * 1.15, Math.PI * 1.6);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.lineWidth = 1.8;
         ctx.stroke();
 
         ctx.restore();

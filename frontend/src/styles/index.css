@@ -1,30 +1,46 @@
 @import './glass.css';
 
 :root {
-  /* Color Palette - Deep Dark Spatial Theme */
-  --bg-deep: #090a10;
-  --bg-surface: rgba(18, 20, 32, 0.65);
+  /* Official Teal Color Palette */
+  --primary-dark-teal: #09637E;
+  --primary-teal: #088395;
+  --secondary-teal: #7AB2B2;
+  --bg-light: #EBF4F6;
   
-  --brand-primary: #7B61FF;
-  --brand-secondary: #A044FF;
-  --brand-cyan: #00F2FE;
-  --brand-pink: #FF0844;
+  /* Semantic Design Tokens */
+  --bg-page: var(--bg-light);
+  --bg-surface: rgba(255, 255, 255, 0.92);
+  --bg-surface-elevated: #FFFFFF;
+  --bg-glass: rgba(255, 255, 255, 0.82);
+  --bg-glass-subtle: rgba(235, 244, 246, 0.65);
   
-  --brand-gradient: linear-gradient(135deg, #7B61FF 0%, #A044FF 100%);
-  --brand-gradient-glow: linear-gradient(135deg, rgba(123, 97, 255, 0.4) 0%, rgba(160, 68, 255, 0.4) 100%);
-  --glass-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
+  --border-glass: rgba(122, 178, 178, 0.35);
+  --border-glass-subtle: rgba(122, 178, 178, 0.2);
+  --border-strong: #09637E;
   
-  --text-main: #F3F4F6;
-  --text-muted: #9CA3AF;
-  --text-dim: #6B7280;
+  /* High-Contrast Typography */
+  --text-main: #0F2C36;        /* Deep teal-tinted readable slate */
+  --text-heading: #09637E;     /* Primary Dark Teal */
+  --text-muted: #486E78;       /* Muted teal for secondary details */
+  --text-dim: #7AB2B2;         /* Secondary teal for subtle captions */
+  --text-on-primary: #FFFFFF;  /* White on dark teal buttons/badges */
   
-  --status-online: #10B981;
-  --status-offline: #EF4444;
+  /* Interactive States */
+  --interactive-primary: #09637E;
+  --interactive-hover: #088395;
+  --interactive-active: #064E63;
+  --interactive-subtle: rgba(8, 131, 149, 0.08);
   
+  /* Status Indicators */
+  --status-online: #0D9488;
+  --status-danger: #DC2626;
+  --status-warning: #D97706;
+  
+  /* Fonts */
   --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-heading: 'Outfit', 'Inter', sans-serif;
   
-  --navbar-height: 76px;
+  --navbar-height: 70px;
 }
 
 * {
@@ -38,29 +54,29 @@
 html, body {
   width: 100%;
   min-height: 100vh;
-  background-color: var(--bg-deep);
+  background-color: var(--bg-page);
   color: var(--text-main);
   font-family: var(--font-main);
   overflow-x: hidden;
-  selection-background-color: rgba(123, 97, 255, 0.3);
+  selection-background-color: rgba(8, 131, 149, 0.2);
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Refined Teal */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(9, 10, 16, 0.8);
+  background: var(--bg-light);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(122, 178, 178, 0.5);
   border-radius: 99px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(123, 97, 255, 0.5);
+  background: var(--primary-teal);
   border: 2px solid transparent;
   background-clip: content-box;
 }

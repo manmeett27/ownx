@@ -1,14 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Image as ImageIcon, Video, MoreHorizontal, MapPin, Calendar } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Image as ImageIcon, Video, MoreHorizontal, MapPin, Calendar, UserPlus, Check, Copy, AlertTriangle } from 'lucide-react';
 import GlassCard from '../common/GlassCard';
 import PostActions from './PostActions';
 import CommentSection from './CommentSection';
-import { fetchPostComments, createComment } from '../../services/api';
+import { fetchPostComments, createComment, followUser } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, onFilterAuthor, onNotify }) {
+  const { user } = useAuth();
   const [comments, setComments] = useState(post.comments || []);
   const [showComments, setShowComments] = useState(false);
   const [activeMediaTab, setActiveMediaTab] = useState('image'); // 'image' | 'video'
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     async function loadComments() {
@@ -20,32 +25,120 @@ export default function PostCard({ post }) {
     loadComments();
   }, [post.post_id]);
 
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleAddComment = async (username, content) => {
     const created = await createComment(post.post_id, username, content);
     setComments((prev) => [...prev, created.comment || { comment_id: Date.now(), username, content }]);
     return created;
   };
 
-  const formattedDate = post.created_at ? new Date(post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
+  const handleFollow = async () => {
+    const currentUserId = user ? user.user_id : 1;
+    const authorId = post.user_id || 2;
+    try {
+      await followUser(authorId, currentUserId);
+      setIsFollowing(!isFollowing);
+      if (onNotify) {
+        onNotify({
+          type: 'success',
+          message: !isFollowing ? `Following @${post.username || 'user'}` : `Unfollowed @${post.username || 'user'}`
+        });
+      }
+    } catch (err) {
+      console.error('Follow error:', err);
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.origin + `/#post-${post.post_id}`);
+    }
+    setShowMenu(false);
+    if (onNotify) {
+      onNotify({ type: 'success', message: 'Post link copied to clipboard!' });
+    }
+  };
+
+  const formattedDate = post.created_at
+    ? new Date(post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : 'Just now';
 
   return (
-    <GlassCard style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <GlassCard style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '22px' }}>
       {/* Post Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'var(--brand-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontWeight: '700', fontSize: '18px', boxShadow: '0 4px 16px rgba(123, 97, 255, 0.35)' }}>
+          <div
+            style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '10px',
+              background: 'var(--primary-dark-teal)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#FFFFFF',
+              fontWeight: '700',
+              fontSize: '16px',
+              boxShadow: '0 2px 8px rgba(9, 99, 126, 0.2)'
+            }}
+          >
             {(post.username || 'U').charAt(0).toUpperCase()}
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '15px', fontWeight: '700', color: '#FFFFFF' }}>
+              <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary-dark-teal)' }}>
                 @{post.username || `user_${post.user_id}`}
               </span>
-              <span style={{ fontSize: '12px', color: 'var(--brand-cyan)', background: 'rgba(0, 242, 254, 0.1)', padding: '2px 8px', borderRadius: '99px', fontWeight: '600' }}>
+              <span
+                style={{
+                  fontSize: '11px',
+                  color: 'var(--primary-teal)',
+                  background: 'rgba(8, 131, 149, 0.08)',
+                  border: '1px solid rgba(8, 131, 149, 0.2)',
+                  padding: '1px 7px',
+                  borderRadius: '6px',
+                  fontWeight: '600'
+                }}
+              >
                 Verified
               </span>
+
+              {user?.username !== post.username && (
+                <button
+                  type="button"
+                  onClick={handleFollow}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--secondary-teal)',
+                    background: isFollowing ? 'rgba(8, 131, 149, 0.1)' : 'transparent',
+                    color: 'var(--primary-dark-teal)',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {isFollowing ? <Check size={11} /> : <UserPlus size={11} />}
+                  <span>{isFollowing ? 'Following' : 'Follow'}</span>
+                </button>
+              )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Calendar size={12} /> {formattedDate}
               </span>
@@ -57,30 +150,134 @@ export default function PostCard({ post }) {
           </div>
         </div>
 
-        <button className="glass-icon-button" style={{ width: '34px', height: '34px' }}>
-          <MoreHorizontal size={18} />
-        </button>
+        {/* More Options Menu */}
+        <div style={{ position: 'relative' }} ref={menuRef}>
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="glass-icon-button"
+            style={{ width: '34px', height: '34px' }}
+            title="Post options"
+            aria-label="Post options"
+          >
+            <MoreHorizontal size={16} />
+          </button>
+
+          {showMenu && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '40px',
+                right: 0,
+                width: '180px',
+                background: '#FFFFFF',
+                border: '1px solid var(--border-glass)',
+                borderRadius: '12px',
+                boxShadow: '0 8px 24px rgba(9, 99, 126, 0.12)',
+                padding: '6px',
+                zIndex: 100,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}
+            >
+              <button
+                onClick={handleCopyLink}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'none',
+                  color: 'var(--text-main)',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(235, 244, 246, 0.8)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+              >
+                <Copy size={14} color="var(--primary-teal)" />
+                <span>Copy Post Link</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowMenu(false);
+                  if (onFilterAuthor && post.username) onFilterAuthor(post.username);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'none',
+                  color: 'var(--text-main)',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(235, 244, 246, 0.8)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+              >
+                <UserPlus size={14} color="var(--primary-teal)" />
+                <span>Filter by Author</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowMenu(false);
+                  if (onNotify) onNotify({ type: 'success', message: 'Post reported to AI Shield moderators.' });
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'none',
+                  color: 'var(--status-danger)',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(220, 38, 38, 0.08)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+              >
+                <AlertTriangle size={14} />
+                <span>Report Content</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Post Caption */}
-      <p style={{ fontSize: '15px', lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-wrap' }}>
+      <p style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-wrap' }}>
         {post.caption}
       </p>
 
-      {/* Media Switching Tabs (Preserving index.html Media Controls requirement) */}
+      {/* Media Switching Tabs */}
       {post.image_url && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.04)', padding: '4px', borderRadius: '12px', width: 'fit-content', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(235, 244, 246, 0.8)', padding: '4px', borderRadius: '10px', width: 'fit-content', border: '1px solid var(--border-glass-subtle)' }}>
             <button
               onClick={() => setActiveMediaTab('image')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '6px 14px',
+                padding: '5px 12px',
                 borderRadius: '8px',
                 border: 'none',
-                background: activeMediaTab === 'image' ? 'var(--brand-gradient)' : 'transparent',
+                background: activeMediaTab === 'image' ? 'var(--primary-dark-teal)' : 'transparent',
                 color: activeMediaTab === 'image' ? '#FFFFFF' : 'var(--text-muted)',
                 fontSize: '12px',
                 fontWeight: '600',
@@ -88,7 +285,7 @@ export default function PostCard({ post }) {
                 transition: 'all 0.2s ease'
               }}
             >
-              <ImageIcon size={14} /> Image View
+              <ImageIcon size={13} /> Image View
             </button>
 
             <button
@@ -97,10 +294,10 @@ export default function PostCard({ post }) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                padding: '6px 14px',
+                padding: '5px 12px',
                 borderRadius: '8px',
                 border: 'none',
-                background: activeMediaTab === 'video' ? 'var(--brand-gradient)' : 'transparent',
+                background: activeMediaTab === 'video' ? 'var(--primary-dark-teal)' : 'transparent',
                 color: activeMediaTab === 'video' ? '#FFFFFF' : 'var(--text-muted)',
                 fontSize: '12px',
                 fontWeight: '600',
@@ -108,7 +305,7 @@ export default function PostCard({ post }) {
                 transition: 'all 0.2s ease'
               }}
             >
-              <Video size={14} /> Video Stream
+              <Video size={13} /> Video Stream
             </button>
           </div>
 
@@ -117,12 +314,12 @@ export default function PostCard({ post }) {
             style={{
               position: 'relative',
               width: '100%',
-              maxHeight: '420px',
-              borderRadius: '18px',
+              maxHeight: '400px',
+              borderRadius: '12px',
               overflow: 'hidden',
-              background: '#0D0E17',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              boxShadow: '0 12px 30px rgba(0, 0, 0, 0.3)',
+              background: '#F0F7F9',
+              border: '1px solid var(--border-glass)',
+              boxShadow: '0 4px 14px rgba(9, 99, 126, 0.06)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -132,16 +329,16 @@ export default function PostCard({ post }) {
               <img
                 src={post.image_url}
                 alt="Post Media"
-                style={{ width: '100%', height: 'auto', maxHeight: '420px', objectFit: 'cover' }}
+                style={{ width: '100%', height: 'auto', maxHeight: '400px', objectFit: 'cover' }}
                 onError={(e) => {
-                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='100%25' height='100%25' fill='%23121420' /%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='20' fill='%239CA3AF'%3EMedia Content Preview%3C/text%3E%3C/svg%3E";
+                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='100%25' height='100%25' fill='%23EBF4F6' /%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%2309637E'%3EMedia Preview%3C/text%3E%3C/svg%3E";
                 }}
               />
             ) : (
-              <div style={{ width: '100%', height: '240px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', background: 'radial-gradient(circle, rgba(123, 97, 255, 0.2) 0%, rgba(9, 10, 16, 0.9) 100%)' }}>
-                <Video size={48} color="var(--brand-primary)" />
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#FFFFFF' }}>
-                  OWNX Spatial Video Stream Ready
+              <div style={{ width: '100%', height: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', background: 'rgba(8, 131, 149, 0.05)' }}>
+                <Video size={42} color="var(--primary-teal)" />
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--primary-dark-teal)' }}>
+                  Video Stream Ready
                 </span>
               </div>
             )}
@@ -151,9 +348,11 @@ export default function PostCard({ post }) {
 
       {/* Post Actions */}
       <PostActions
+        postId={post.post_id}
         commentCount={comments.length}
         onToggleComments={() => setShowComments(!showComments)}
         isCommentsOpen={showComments}
+        onNotify={onNotify}
       />
 
       {/* Comments Section Drawer */}
