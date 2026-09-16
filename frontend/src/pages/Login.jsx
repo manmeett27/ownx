@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, MapPin, Sparkles, ArrowRight, KeyRound, CheckCircle2, X } from 'lucide-react';
+import { User, Lock, Sparkles, ArrowRight, KeyRound, CheckCircle2, X } from 'lucide-react';
 import SpatialBackground from '../components/3d/SpatialBackground';
 import GlassCard from '../components/common/GlassCard';
 import GlassInput from '../components/common/GlassInput';
@@ -12,8 +12,7 @@ export default function Login({ onNavigateRegister, onLoginSuccess }) {
 
   const [formData, setFormData] = useState({
     username: '',
-    password: '',
-    location: 'Lucknow'
+    password: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -114,26 +113,6 @@ export default function Login({ onNavigateRegister, onLoginSuccess }) {
               required
             />
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)' }}>
-                Preferred Region
-              </label>
-              <div className="glass-input-wrapper">
-                <MapPin className="glass-input-icon" size={17} />
-                <select
-                  className="glass-select"
-                  style={{ width: '100%', paddingLeft: '42px', height: '42px' }}
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                >
-                  <option value="Lucknow">Lucknow (Region 1)</option>
-                  <option value="Delhi">Delhi (Region 2)</option>
-                  <option value="Mumbai">Mumbai (Region 3)</option>
-                  <option value="Bangalore">Bangalore (Region 4)</option>
-                </select>
-              </div>
-            </div>
-
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-4px' }}>
               <button
                 type="button"
@@ -230,7 +209,7 @@ export default function Login({ onNavigateRegister, onLoginSuccess }) {
             </div>
 
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '18px' }}>
-              Enter your username or email address below to receive an account recovery code.
+              Enter your username below to receive an account recovery verification code.
             </p>
 
             {resetSuccess ? (

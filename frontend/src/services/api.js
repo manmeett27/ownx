@@ -1,5 +1,21 @@
 const API_BASE_URL = 'http://localhost:5000';
 
+/**
+ * Returns Authorization headers using stored JWT token.
+ * For FormData / multipart requests, does NOT set Content-Type header so the browser sets the boundary correctly.
+ */
+function getAuthHeaders(isMultipart = false) {
+  const token = localStorage.getItem('ownx_token');
+  const headers = {};
+  if (!isMultipart) {
+    headers['Content-Type'] = 'application/json';
+  }
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 export async function checkBackendHealth() {
   try {
     const res = await fetch(`${API_BASE_URL}/`, { method: 'GET' });
@@ -19,20 +35,76 @@ export async function loginUser(username, password) {
   });
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.error || 'Login failed');
+    throw new Error(data.error || 'Login failed. Please check your credentials.');
   }
   return data;
 }
 
-export async function registerUser(username, password, location_id = 1) {
+export async function registerUser(username, password, extraData = {}) {
   const res = await fetch(`${API_BASE_URL}/api/users/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password, location_id })
+    body: JSON.stringify({ username, password, ...extraData })
   });
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.error || 'Registration failed');
+    throw new Error(data.error || 'Registration failed.');
+  }
+  return data;
+}
+
+export async function fetchCurrentUser() {
+  const token = localStorage.getItem('ownx_token');
+  if (!token) return null;
+
+  const res = await fetch(`${API_BASE_URL}/api/users/me`, {
+    method: 'GET',
+    headers: getAuthHeaders(false)
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to authenticate user session.');
+  }
+  return res.json();
+}
+
+export async function fetchUserProfile(userId) {
+  const res = await fetch(`${API_BASE_URL}/api/users/${userId}`);
+  if (!res.ok) {
+    throw new Error('Failed to load user profile.');
+  }
+  return res.json();
+}
+
+export async function updateUserProfile(userId, profileData) {
+  const res = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(false),
+    body: JSON.stringify(profileData)
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Unable to update profile. Please try again.');
+  }
+  return data;
+}
+
+/**
+ * Uploads profile photo to Cloudinary via authenticated multipart/form-data request
+ */
+export async function uploadProfilePhoto(file) {
+  const formData = new FormData();
+  formData.append('photo', file);
+
+  const res = await fetch(`${API_BASE_URL}/api/users/profile/photo`, {
+    method: 'PUT',
+    headers: getAuthHeaders(true), // Let browser set multipart boundary
+    body: formData
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to upload profile photo to Cloudinary.');
   }
   return data;
 }
@@ -45,17 +117,24 @@ export async function fetchPosts() {
   return res.json();
 }
 
+/**
+ * Creates a post on the backend.
+ * Supports multipart FormData (with 'media' file for Cloudinary upload)
+ * or JSON payload for text-only posts.
+ */
 export async function createPost(postData) {
+  const isMultipart = postData instanceof FormData;
+  const headers = getAuthHeaders(isMultipart);
+
   const res = await fetch(`${API_BASE_URL}/api/posts`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(postData)
+    headers,
+    body: isMultipart ? postData : JSON.stringify(postData)
   });
+
   const data = await res.json();
   if (!res.ok) {
-    const errorObj = new Error(data.error || 'Failed to create post');
-    errorObj.moderation = data.moderation;
-    throw errorObj;
+    throw new Error(data.error || 'Unable to create post. Please try again.');
   }
   return data;
 }
@@ -66,17 +145,15 @@ export async function fetchPostComments(postId) {
   return res.json();
 }
 
-export async function createComment(postId, username, content) {
+export async function createComment(postId, content) {
   const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/comments`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, content })
+    headers: getAuthHeaders(false),
+    body: JSON.stringify({ content })
   });
   const data = await res.json();
   if (!res.ok) {
-    const errorObj = new Error(data.error || 'Failed to publish comment');
-    errorObj.moderation = data.moderation;
-    throw errorObj;
+    throw new Error(data.error || 'Failed to publish comment');
   }
   return data;
 }
@@ -84,7 +161,7 @@ export async function createComment(postId, username, content) {
 export async function followUser(userId, followerUserId) {
   const res = await fetch(`${API_BASE_URL}/api/followers/follow`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(false),
     body: JSON.stringify({ user_id: userId, follower_user_id: followerUserId })
   });
   return res.json();

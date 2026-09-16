@@ -1,28 +1,53 @@
 import React, { useState } from 'react';
-import { User, Lock, MapPin, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { User, Lock, MapPin, Sparkles, ArrowRight, KeyRound, RefreshCw } from 'lucide-react';
 import SpatialBackground from '../components/3d/SpatialBackground';
 import GlassCard from '../components/common/GlassCard';
 import GlassInput from '../components/common/GlassInput';
 import GlassButton from '../components/common/GlassButton';
 import Toast from '../components/common/Toast';
 import { useAuth } from '../context/AuthContext';
+import { getRealUserLocation } from '../services/locationService';
 
 export default function Register({ onNavigateLogin, onRegisterSuccess }) {
   const { register } = useAuth();
 
   const [formData, setFormData] = useState({
     username: '',
+    name: '',
     password: '',
     confirmPassword: '',
-    locationId: 1
+    location_str: '',
+    latitude: null,
+    longitude: null
   });
 
   const [loading, setLoading] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
   const [errorToast, setErrorToast] = useState(null);
+
+  const handleDetectLocation = async () => {
+    setDetectingLocation(true);
+    try {
+      const loc = await getRealUserLocation();
+      setFormData(prev => ({
+        ...prev,
+        location_str: loc.location_str,
+        latitude: loc.latitude,
+        longitude: loc.longitude
+      }));
+    } catch (err) {
+      setErrorToast({
+        message: 'Location Notice',
+        details: err.message || 'Could not auto-detect location. You can enter your city manually or configure it later in your profile.'
+      });
+    } finally {
+      setDetectingLocation(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.username || !formData.password) {
+    if (!formData.username.trim() || !formData.password) {
       setErrorToast({ message: 'Validation Error', details: 'Please fill in all required fields.' });
       return;
     }
@@ -35,7 +60,12 @@ export default function Register({ onNavigateLogin, onRegisterSuccess }) {
     setLoading(true);
     setErrorToast(null);
 
-    const res = await register(formData.username, formData.password, Number(formData.locationId));
+    const res = await register(formData.username.trim(), formData.password, {
+      name: formData.name.trim() || formData.username.trim(),
+      location_str: formData.location_str,
+      latitude: formData.latitude,
+      longitude: formData.longitude
+    });
     setLoading(false);
 
     if (res.success) {
@@ -52,7 +82,7 @@ export default function Register({ onNavigateLogin, onRegisterSuccess }) {
     <div style={{ position: 'relative', width: '100vw', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <SpatialBackground />
 
-      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '420px', animation: 'fadeIn 0.3s ease-out' }}>
+      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '440px', animation: 'fadeIn 0.3s ease-out' }}>
         <GlassCard style={{ padding: '36px 30px' }}>
           {/* OWNX Logo */}
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
@@ -79,15 +109,23 @@ export default function Register({ onNavigateLogin, onRegisterSuccess }) {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <GlassInput
-              label="Choose Username"
+              label="Username"
               name="username"
               placeholder="e.g. alex_spatial"
               icon={User}
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               required
+            />
+
+            <GlassInput
+              label="Full Name (Optional)"
+              name="name"
+              placeholder="e.g. Alex Henderson"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
 
             <GlassInput
@@ -106,29 +144,49 @@ export default function Register({ onNavigateLogin, onRegisterSuccess }) {
               name="confirmPassword"
               type="password"
               placeholder="Re-enter password"
-              icon={ShieldCheck}
+              icon={KeyRound}
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               required
             />
 
+            {/* Real Location (Optional / Auto-detect) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)' }}>
-                Your Primary Location
-              </label>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)' }}>
+                  Location (Optional)
+                </label>
+                <button
+                  type="button"
+                  onClick={handleDetectLocation}
+                  disabled={detectingLocation}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--primary-teal)',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: 0
+                  }}
+                >
+                  <RefreshCw size={11} className={detectingLocation ? 'animate-spin' : ''} />
+                  <span>{detectingLocation ? 'Detecting...' : 'Auto-detect GPS'}</span>
+                </button>
+              </div>
+
               <div className="glass-input-wrapper">
                 <MapPin className="glass-input-icon" size={17} />
-                <select
-                  className="glass-select"
-                  style={{ width: '100%', paddingLeft: '42px', height: '42px' }}
-                  value={formData.locationId}
-                  onChange={(e) => setFormData({ ...formData, locationId: e.target.value })}
-                >
-                  <option value="1">Lucknow (Region 1)</option>
-                  <option value="2">Delhi (Region 2)</option>
-                  <option value="3">Mumbai (Region 3)</option>
-                  <option value="4">Bangalore (Region 4)</option>
-                </select>
+                <input
+                  type="text"
+                  className="glass-input"
+                  placeholder="e.g. San Francisco, CA (or leave blank)"
+                  value={formData.location_str}
+                  onChange={(e) => setFormData({ ...formData, location_str: e.target.value })}
+                />
               </div>
             </div>
 

@@ -1,185 +1,202 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../config/db");
+const { authenticateUser } = require("../middleware/auth");
+const upload = require("../middleware/upload");
+const { uploadMediaStream } = require("../config/cloudinary");
 
-// Helper function to call the Python Content Moderation AI Service
-async function moderateText(text) {
-    if (!text) return { flagged: false };
-    try {
-        const response = await fetch("http://127.0.0.1:5001/moderate/text", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text })
-        });
-        if (response.ok) {
-            return await response.json();
-        }
-    } catch (err) {
-        console.error("Moderation API text connection error:", err.message);
-    }
-    
-    // Node.js fallback check if python API is offline
-    const localBadWords = ["idiot", "moron", "loser", "shut up", "fuck", "porn", "kill", "murder", "scam"];
-    const textLower = text.toLowerCase();
-    const matched = [];
-    for (const word of localBadWords) {
-        if (textLower.includes(word)) {
-            matched.push({ word, category: "harassment/inappropriate" });
-        }
-    }
-    if (matched.length > 0) {
-        return {
-            flagged: true,
-            reason: `Local fallback: Detected inappropriate content`,
-            matched_keywords: matched
-        };
-    }
-    return { flagged: false };
-}
-
-async function moderateImage(imagePath) {
-    if (!imagePath) return { flagged: false };
-    try {
-        const response = await fetch("http://127.0.0.1:5001/moderate/image", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `image_path=${encodeURIComponent(imagePath)}`
-        });
-        if (response.ok) {
-            return await response.json();
-        }
-    } catch (err) {
-        console.error("Moderation API image connection error:", err.message);
-    }
-    
-    // Node.js fallback filename heuristic check if python API is offline
-    const filename = imagePath.toLowerCase();
-    const badPrefixes = ["alchol", "drugs", "sexual", "smoking", "violence", "weapons"];
-    for (const prefix of badPrefixes) {
-        if (filename.includes(prefix)) {
-            return {
-                flagged: true,
-                reason: `Local fallback: Detected inappropriate image (${prefix})`,
-                details: { category: prefix }
-            };
-        }
-    }
-    return { flagged: false };
-}
-
-// 1. Get all posts
+// 1. Get all posts with populated author details
 router.get("/", async (req, res) => {
-    try {
-        // Fetch posts and join with user info
-        const result = await pool.query(`
-            SELECT p.*, u.username 
-            FROM posts p
-            LEFT JOIN users u ON p.user_id = u.user_id
-            ORDER BY p.created_at DESC
-        `);
-        res.json(result.rows);
-    } catch (err) {
-        console.error("Error fetching posts:", err.message);
-        res.status(500).json({ error: "Failed to retrieve posts" });
-    }
+  try {
+    const result = await pool.query(`
+      SELECT 
+        p.post_id,
+        p.user_id,
+        p.caption,
+        p.image_url,
+        p.post_type,
+        p.category_id,
+        p.interest_id,
+        p.location_id,
+        p.location_str,
+        p.created_at,
+        u.username,
+        u.name,
+        u.profile_pic,
+        u.location_str as user_location
+      FROM posts p
+      LEFT JOIN users u ON p.user_id = u.user_id
+      ORDER BY p.created_at DESC
+    `);
+
+    // Standardize post response with both top-level and nested author fields
+    const posts = (result.rows || []).map((row) => {
+      const authorName = row.name || row.username || "Community Member";
+      const authorUsername = row.username || `user_${row.user_id || 1}`;
+      const authorPic = row.profile_pic || "";
+      const authorLocation = row.location_str || row.user_location || "";
+
+      return {
+        post_id: row.post_id,
+        user_id: row.user_id,
+        caption: row.caption || "",
+        image_url: row.image_url || null,
+        post_type: row.post_type || "text",
+        created_at: row.created_at,
+        location_str: authorLocation,
+        name: authorName,
+        username: authorUsername,
+        profile_pic: authorPic,
+        author: {
+          user_id: row.user_id,
+          name: authorName,
+          username: authorUsername,
+          profile_pic: authorPic,
+          location_str: authorLocation
+        }
+      };
+    });
+
+    res.json(posts);
+  } catch (err) {
+    console.error("Error fetching posts:", err.message);
+    res.status(500).json({ error: "Failed to retrieve posts" });
+  }
 });
 
-// 2. Create a new post
-router.post("/", async (req, res) => {
-    const { user_id, caption, image_url, post_type, category_id, interest_id, location_id } = req.body;
+// Middleware to handle single file upload with any common field name ('media', 'image', 'file')
+const handleMediaUpload = (req, res, next) => {
+  upload.any()(req, res, (err) => {
+    if (err) {
+      console.error("Multer upload error:", err.message);
+      return res.status(400).json({ error: err.message });
+    }
+    // If files were uploaded, pick the first one and attach to req.file
+    if (req.files && req.files.length > 0) {
+      req.file = req.files[0];
+    }
+    next();
+  });
+};
 
-    // AI Moderation Checks
-    if (caption) {
-        const textResult = await moderateText(caption);
-        if (textResult.flagged) {
-            return res.status(400).json({
-                error: "Post caption violates content guidelines",
-                moderation: textResult
-            });
-        }
+// 2. Create a new post (PROTECTED: Author derived strictly from JWT)
+router.post("/", authenticateUser, handleMediaUpload, async (req, res) => {
+  const { caption, location_str, post_type } = req.body;
+  const authUser = req.user; // Authenticated user verified by JWT
+
+  let finalMediaUrl = null;
+  let finalPostType = post_type || "text";
+
+  try {
+    // If a media file was sent via multipart/form-data, upload to Cloudinary
+    if (req.file) {
+      const isVideo = req.file.mimetype.startsWith("video/");
+      finalPostType = isVideo ? "video" : "image";
+
+      const uploadResult = await uploadMediaStream(req.file.buffer, {
+        folder: "ownx_posts",
+        resource_type: finalPostType
+      });
+
+      finalMediaUrl = uploadResult.secure_url;
     }
 
-    if (image_url) {
-        const imageResult = await moderateImage(image_url);
-        if (imageResult.flagged) {
-            return res.status(400).json({
-                error: "Uploaded image violates content guidelines",
-                moderation: imageResult
-            });
-        }
+    if (!caption && !finalMediaUrl) {
+      return res.status(400).json({ error: "Post must contain either text caption or media attachment." });
     }
 
-    try {
-        const result = await pool.query(`
-            INSERT INTO posts (user_id, caption, image_url, post_type, category_id, interest_id, location_id)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING *
-        `, [
-            user_id || null, 
-            caption || null, 
-            image_url || null, 
-            post_type || "image", 
-            category_id || null, 
-            interest_id || null, 
-            location_id || null
-        ]);
-        
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        console.error("Error creating post:", err.message);
-        res.status(500).json({ error: "Failed to create post" });
-    }
+    // Insert post into database with authenticated user ID
+    const result = await pool.query(`
+      INSERT INTO posts (user_id, caption, image_url, post_type, category_id, interest_id, location_id, location_str)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `, [
+      authUser.user_id, // AUTHOR ALWAYS COMES FROM AUTHENTICATED USER
+      caption || null,
+      finalMediaUrl,
+      finalPostType,
+      1,
+      1,
+      null,
+      location_str || authUser.location_str || null
+    ]);
+
+    const newPost = result.rows[0];
+
+    // Return the newly created post fully populated with author information
+    const populatedPost = {
+      post_id: newPost.post_id,
+      user_id: authUser.user_id,
+      caption: newPost.caption || "",
+      image_url: newPost.image_url,
+      post_type: newPost.post_type,
+      created_at: newPost.created_at,
+      location_str: newPost.location_str || authUser.location_str || "",
+      name: authUser.name || authUser.username,
+      username: authUser.username,
+      profile_pic: authUser.profile_pic || "",
+      author: {
+        user_id: authUser.user_id,
+        name: authUser.name || authUser.username,
+        username: authUser.username,
+        profile_pic: authUser.profile_pic || "",
+        location_str: authUser.location_str || ""
+      }
+    };
+
+    res.status(201).json(populatedPost);
+  } catch (err) {
+    console.error("Error creating post:", err.message);
+    res.status(err.http_code || 500).json({
+      error: err.message || "Failed to create post"
+    });
+  }
 });
 
 // 3. Get comments for a post
 router.get("/:post_id/comments", async (req, res) => {
-    const { post_id } = req.params;
-    try {
-        const result = await pool.query(`
-            SELECT * FROM comments 
-            WHERE post_id = $1 
-            ORDER BY created_at ASC
-        `, [post_id]);
-        res.json(result.rows);
-    } catch (err) {
-        console.error("Error fetching comments:", err.message);
-        res.status(500).json({ error: "Failed to retrieve comments" });
-    }
+  const { post_id } = req.params;
+  try {
+    const result = await pool.query(`
+      SELECT * FROM comments 
+      WHERE post_id = $1 
+      ORDER BY created_at ASC
+    `, [post_id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching comments:", err.message);
+    res.status(500).json({ error: "Failed to retrieve comments" });
+  }
 });
 
-// 4. Create comment for a post
-router.post("/:post_id/comments", async (req, res) => {
-    const { post_id } = req.params;
-    const { username, content } = req.body;
+// 4. Create comment for a post (PROTECTED)
+router.post("/:post_id/comments", authenticateUser, async (req, res) => {
+  const { post_id } = req.params;
+  const { content } = req.body;
+  const authUser = req.user;
 
-    if (!content) {
-        return res.status(400).json({ error: "Comment content is required" });
-    }
+  if (!content || !content.trim()) {
+    return res.status(400).json({ error: "Comment content cannot be blank" });
+  }
 
-    // AI Moderation check for comment content
-    const textResult = await moderateText(content);
-    if (textResult.flagged) {
-        return res.status(400).json({
-            error: "Comment violates content guidelines",
-            moderation: textResult
-        });
+  try {
+    const result = await pool.query(`
+      INSERT INTO comments (post_id, username, content)
+      VALUES ($1, $2, $3)
+      RETURNING *
+    `, [post_id, authUser.username || "Anonymous", content.trim()]);
+    
+    res.status(201).json({
+      message: "Comment added successfully",
+      comment: result.rows[0]
+    });
+  } catch (err) {
+    console.error("Error adding comment:", err.message);
+    if (err.message.includes("Post not found") || err.code === "23503") {
+      return res.status(404).json({ error: "Post not found" });
     }
-
-    try {
-        const result = await pool.query(`
-            INSERT INTO comments (post_id, username, content)
-            VALUES ($1, $2, $3)
-            RETURNING *
-        `, [post_id, username || "Anonymous", content]);
-        
-        res.status(201).json(result.rows[0]);
-    } catch (err) {
-        console.error("Error adding comment:", err.message);
-        if (err.message.includes("Post not found") || err.code === "23503") {
-            return res.status(404).json({ error: "Post not found" });
-        }
-        res.status(500).json({ error: "Failed to add comment" });
-    }
+    res.status(500).json({ error: "Failed to add comment" });
+  }
 });
 
 module.exports = router;

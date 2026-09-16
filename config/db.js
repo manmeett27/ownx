@@ -6,12 +6,36 @@ class MockDbPool {
   constructor() {
     this.isMock = true;
     this.users = [
-      { user_id: 1, username: "Alice", password_hash: "$2b$10$wT5H...hash1", location_id: 1, created_at: new Date() },
-      { user_id: 2, username: "Bob", password_hash: "$2b$10$wT5H...hash2", location_id: 2, created_at: new Date() }
+      {
+        user_id: 1,
+        username: "Alice",
+        name: "Alice Spatial",
+        bio: "Exploring creative tech, 3D web experiences, and community design.",
+        profile_pic: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80",
+        location_str: "San Francisco, CA",
+        latitude: 37.7749,
+        longitude: -122.4194,
+        password_hash: "$2b$10$wT5H...hash1",
+        location_id: 1,
+        created_at: new Date()
+      },
+      {
+        user_id: 2,
+        username: "Bob",
+        name: "Bob Reynolds",
+        bio: "Creative technologist and open-source enthusiast.",
+        profile_pic: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80",
+        location_str: "New York, NY",
+        latitude: 40.7128,
+        longitude: -74.0060,
+        password_hash: "$2b$10$wT5H...hash2",
+        location_id: 2,
+        created_at: new Date()
+      }
     ];
     this.locations = [
-      { location_id: 1, location_name: "Lucknow" },
-      { location_id: 2, location_name: "Delhi" }
+      { location_id: 1, location_name: "San Francisco" },
+      { location_id: 2, location_name: "New York" }
     ];
     this.interests = [
       { interest_id: 1, interest_name: "Technology" },
@@ -32,24 +56,26 @@ class MockDbPool {
       {
         post_id: 1,
         user_id: 1,
-        caption: "Welcome to OWNX - a next generation social platform!",
-        image_url: "media/images/healthy_food.png",
+        caption: "Welcome to OWNX - a next-generation social network and collaborative workspace!",
+        image_url: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=1200&q=80",
         post_type: "image",
         category_id: 1,
         interest_id: 1,
         location_id: 1,
-        created_at: new Date()
+        location_str: "San Francisco, CA",
+        created_at: new Date(Date.now() - 3600000)
       },
       {
         post_id: 2,
         user_id: 2,
-        caption: "Exploring healthy recipes today!",
-        image_url: "media/images/food.png",
+        caption: "Experimenting with spatial web animations, responsive design tokens, and real-time media feeds.",
+        image_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
         post_type: "image",
         category_id: 2,
         interest_id: 2,
         location_id: 2,
-        created_at: new Date()
+        location_str: "New York, NY",
+        created_at: new Date(Date.now() - 7200000)
       }
     ];
     this.comments = [
@@ -57,8 +83,8 @@ class MockDbPool {
         comment_id: 1,
         post_id: 1,
         username: "Bob",
-        content: "Awesome platform! Keep it up.",
-        created_at: new Date()
+        content: "Love the clean teal aesthetic and the smooth 3D visuals!",
+        created_at: new Date(Date.now() - 1800000)
       }
     ];
     this.likes = [
@@ -80,8 +106,8 @@ class MockDbPool {
       return { rows: [{ now: new Date() }] };
     }
 
-    // 2. CREATE TABLE
-    if (normalized.startsWith("CREATE TABLE")) {
+    // 2. CREATE TABLE / ALTER TABLE
+    if (normalized.startsWith("CREATE TABLE") || normalized.startsWith("ALTER TABLE")) {
       return { rows: [] };
     }
 
@@ -96,7 +122,36 @@ class MockDbPool {
     if (normalized.includes("FROM users WHERE user_id = $1") || normalized.includes("FROM users u WHERE u.user_id = $1")) {
       const [userId] = params;
       const matched = this.users.filter(u => u.user_id === Number(userId));
-      return { rows: matched };
+      const sanitized = matched.map(({ password_hash, ...u }) => u);
+      return { rows: sanitized };
+    }
+
+    // UPDATE users SET profile_pic = $1 WHERE user_id = $2
+    if (normalized.includes("UPDATE users SET profile_pic = $1 WHERE user_id = $2")) {
+      const [profile_pic, user_id] = params;
+      const user = this.users.find(u => u.user_id === Number(user_id));
+      if (!user) throw new Error("User not found");
+      user.profile_pic = profile_pic;
+      const { password_hash, ...sanitized } = user;
+      return { rows: [sanitized] };
+    }
+
+    // UPDATE users SET name = $1, username = $2, bio = $3, profile_pic = $4, location_str = $5, latitude = $6, longitude = $7 WHERE user_id = $8
+    if (normalized.startsWith("UPDATE users SET")) {
+      const [name, username, bio, profile_pic, location_str, latitude, longitude, user_id] = params;
+      const user = this.users.find(u => u.user_id === Number(user_id));
+      if (!user) {
+        throw new Error("User not found");
+      }
+      if (name !== undefined) user.name = name;
+      if (username !== undefined) user.username = username;
+      if (bio !== undefined) user.bio = bio;
+      if (profile_pic !== undefined) user.profile_pic = profile_pic;
+      if (location_str !== undefined) user.location_str = location_str;
+      if (latitude !== undefined) user.latitude = latitude;
+      if (longitude !== undefined) user.longitude = longitude;
+      const { password_hash, ...sanitized } = user;
+      return { rows: [sanitized] };
     }
 
     // SELECT * FROM users
@@ -109,7 +164,12 @@ class MockDbPool {
     if (normalized.startsWith("INSERT INTO users")) {
       const username = params[0] || "anonymous";
       const hash = params[1] || "";
-      const location_id = params[2] || 1;
+      const name = params[2] || username;
+      const bio = params[3] || "";
+      const location_str = params[4] || "";
+      const latitude = params[5] || null;
+      const longitude = params[6] || null;
+
       const existing = this.users.find(u => u.username.toLowerCase() === username.toLowerCase());
       if (existing) {
         const err = new Error("Username already exists");
@@ -119,8 +179,14 @@ class MockDbPool {
       const newUser = {
         user_id: this.users.length + 1,
         username,
+        name,
+        bio,
+        profile_pic: "",
+        location_str,
+        latitude,
+        longitude,
         password_hash: hash,
-        location_id: Number(location_id),
+        location_id: 1,
         created_at: new Date()
       };
       this.users.push(newUser);
@@ -128,13 +194,27 @@ class MockDbPool {
       return { rows: [result] };
     }
 
-    // SELECT p.*, u.username FROM posts p LEFT JOIN users u
+    // SELECT posts joined with user details
     if (normalized.includes("FROM posts p") || normalized.includes("SELECT p.*")) {
       const joinedPosts = this.posts.map(p => {
         const u = this.users.find(user => user.user_id === p.user_id);
+        const authorName = u ? (u.name || u.username) : "Community Member";
+        const authorUsername = u ? u.username : `user_${p.user_id || 1}`;
+        const authorPic = u ? (u.profile_pic || "") : "";
+        const authorLocation = u ? (u.location_str || "") : "";
+
         return {
           ...p,
-          username: u ? u.username : "Anonymous"
+          username: authorUsername,
+          name: authorName,
+          profile_pic: authorPic,
+          location_str: p.location_str || authorLocation,
+          author: {
+            user_id: p.user_id,
+            username: authorUsername,
+            name: authorName,
+            profile_pic: authorPic
+          }
         };
       });
       joinedPosts.sort((a, b) => b.created_at - a.created_at);
@@ -143,19 +223,20 @@ class MockDbPool {
 
     // INSERT INTO posts
     if (normalized.startsWith("INSERT INTO posts")) {
-      const [user_id, caption, image_url, post_type, category_id, interest_id, location_id] = params;
+      const [user_id, caption, image_url, post_type, category_id, interest_id, location_id, location_str] = params;
       const newPost = {
         post_id: this.posts.length + 1,
         user_id: user_id ? Number(user_id) : null,
         caption: caption || null,
         image_url: image_url || null,
         post_type: post_type || "image",
-        category_id: category_id ? Number(category_id) : null,
-        interest_id: interest_id ? Number(interest_id) : null,
+        category_id: category_id ? Number(category_id) : 1,
+        interest_id: interest_id ? Number(interest_id) : 1,
         location_id: location_id ? Number(location_id) : null,
+        location_str: location_str || "",
         created_at: new Date()
       };
-      this.posts.push(newPost);
+      this.posts.unshift(newPost);
       return { rows: [newPost] };
     }
 
@@ -170,12 +251,6 @@ class MockDbPool {
     // INSERT INTO comments
     if (normalized.startsWith("INSERT INTO comments")) {
       const [post_id, username, content] = params;
-      const postExists = this.posts.some(p => p.post_id === Number(post_id));
-      if (!postExists) {
-        const err = new Error("Post not found");
-        err.code = "23503";
-        throw err;
-      }
       const newComment = {
         comment_id: this.comments.length + 1,
         post_id: Number(post_id),
@@ -249,8 +324,8 @@ if (useMock) {
 
     const pgPool = new Pool({
       host: dbHost,
-      port: process.env.DB_PORT || 5432,
-      database: process.env.DB_NAME || "postgres",
+      port: process.env.DB_PORT || 10203,
+      database: process.env.DB_NAME || "ownX",
       user: process.env.DB_USER || "postgres",
       password: process.env.DB_PASSWORD || process.env.DB_PASS || "010203",
       connectionTimeoutMillis: 5000,
@@ -260,18 +335,11 @@ if (useMock) {
     dbPool = {
       isMock: false,
       realPool: pgPool,
-      mockPool: new MockDbPool(),
+      // No MockDbPool fallback — real errors must surface so the API returns honest responses.
+      // Silent fallback was causing register to appear to work (against mock) but login to
+      // always fail (mock has different fake users with non-bcrypt passwords).
       async query(sqlText, params) {
-        try {
-          return await pgPool.query(sqlText, params);
-        } catch (err) {
-          // Catch any connection/auth/timeout error when PostgreSQL is not running locally
-          if (!this.warned) {
-            console.warn(`[DB Strategy] PostgreSQL query notice (${err.message}). Falling back to MockDbPool.`);
-            this.warned = true;
-          }
-          return await this.mockPool.query(sqlText, params);
-        }
+        return pgPool.query(sqlText, params);
       }
     };
   } catch (e) {

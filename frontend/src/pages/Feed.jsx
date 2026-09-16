@@ -6,10 +6,10 @@ import CreatePostCard from '../components/feed/CreatePostCard';
 import PostCard from '../components/feed/PostCard';
 import { PostCardSkeleton } from '../components/common/Skeleton';
 import Toast from '../components/common/Toast';
-import { fetchPosts, createPost } from '../services/api';
+import { fetchPosts } from '../services/api';
 import { Compass, Sparkles, RefreshCw, Filter } from 'lucide-react';
 
-export default function Feed({ onNavigateAuth }) {
+export default function Feed({ onNavigateAuth, onNavigateProfile, onNavigateVideos }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
@@ -32,22 +32,15 @@ export default function Feed({ onNavigateAuth }) {
     loadPosts();
   }, []);
 
-  const handlePostCreated = async (postPayload) => {
-    const newPost = await createPost(postPayload);
+  const handlePostCreated = (newPost) => {
+    // newPost is already the fully-populated post returned by the backend (via CreatePostCard → api.createPost)
+    // Just prepend it to the feed — do NOT call createPost() again here (that would double-post)
     setToast({
       type: 'success',
       message: 'Post Published Successfully!',
-      details: 'Your post passed AI content moderation and is live.'
+      details: newPost.image_url ? 'Your media has been uploaded to Cloudinary and is now live.' : 'Your update is now live in the feed.'
     });
-    setPosts((prev) => [newPost.post || newPost, ...prev]);
-  };
-
-  const handleModerationBlock = (reason) => {
-    setToast({
-      type: 'moderation',
-      message: 'Blocked by AI Content Shield',
-      details: reason
-    });
+    setPosts((prev) => [newPost, ...prev]);
   };
 
   // Filter posts based on search term or explore recommendations
@@ -64,6 +57,8 @@ export default function Feed({ onNavigateAuth }) {
       <SpatialBackground />
       <Navbar
         onNavigateAuth={onNavigateAuth}
+        onNavigateProfile={onNavigateProfile}
+        onNavigateVideos={onNavigateVideos}
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab)}
         onNavigateHome={() => {
@@ -105,11 +100,11 @@ export default function Feed({ onNavigateAuth }) {
                   <Compass size={20} />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--primary-dark-teal)' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--primary-dark-teal)', margin: 0 }}>
                     Explore Recommendations
                   </h2>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                    Curated content powered by implicit feedback algorithms & safety filters
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+                    Curated content across your network and trending topics
                   </p>
                 </div>
               </div>
@@ -117,7 +112,7 @@ export default function Feed({ onNavigateAuth }) {
               <button
                 onClick={loadPosts}
                 className="glass-button glass-button-secondary"
-                style={{ padding: '6px 12px', fontSize: '12px', height: '34px' }}
+                style={{ padding: '6px 14px', fontSize: '12px', height: '34px' }}
                 title="Refresh recommendations"
               >
                 <RefreshCw size={14} />
@@ -154,7 +149,6 @@ export default function Feed({ onNavigateAuth }) {
 
           <CreatePostCard
             onPostCreated={handlePostCreated}
-            onModerationBlock={handleModerationBlock}
           />
 
           {/* Posts List */}
@@ -179,8 +173,8 @@ export default function Feed({ onNavigateAuth }) {
               <div style={{ fontSize: '17px', fontWeight: '700', color: 'var(--primary-dark-teal)' }}>
                 No posts found
               </div>
-              <p style={{ fontSize: '13px', maxWidth: '360px', lineHeight: '1.5' }}>
-                {searchTerm ? 'No results matched your search term. Try another query.' : 'Be the first to share an update with your community!'}
+              <p style={{ fontSize: '13px', maxWidth: '360px', lineHeight: '1.5', margin: 0 }}>
+                {searchTerm ? 'No results matched your search term. Try another query.' : 'Be the first to share an update or media with your network!'}
               </p>
               {searchTerm && (
                 <button
@@ -208,7 +202,11 @@ export default function Feed({ onNavigateAuth }) {
 
         {/* Right Column: Sidebar */}
         <section style={{ maxWidth: '360px', width: '100%' }}>
-          <Sidebar onSearchChange={(term) => setSearchTerm(term)} />
+          <Sidebar
+            onSearchChange={(term) => setSearchTerm(term)}
+            onNavigateProfile={onNavigateProfile}
+            onNavigateVideos={onNavigateVideos}
+          />
         </section>
       </main>
 

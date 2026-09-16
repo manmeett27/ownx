@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, ShieldAlert, User } from 'lucide-react';
+import { Send, AlertCircle, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function CommentSection({ comments = [], onAddComment }) {
@@ -21,8 +21,7 @@ export default function CommentSection({ comments = [], onAddComment }) {
       await onAddComment(activeUser, newComment.trim());
       setNewComment('');
     } catch (err) {
-      const modReason = err.moderation?.reason || err.message;
-      setErrorAlert(modReason);
+      setErrorAlert(err.message || 'Failed to publish comment. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -54,8 +53,8 @@ export default function CommentSection({ comments = [], onAddComment }) {
             >
               <div
                 style={{
-                  width: '26px',
-                  height: '26px',
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
                   background: 'var(--primary-dark-teal)',
                   display: 'flex',
@@ -96,8 +95,8 @@ export default function CommentSection({ comments = [], onAddComment }) {
             gap: '8px'
           }}
         >
-          <ShieldAlert size={16} color="#DC2626" style={{ flexShrink: 0 }} />
-          <span><strong>AI Shield Notice:</strong> {errorAlert}</span>
+          <AlertCircle size={16} color="#DC2626" style={{ flexShrink: 0 }} />
+          <span>{errorAlert}</span>
         </div>
       )}
 

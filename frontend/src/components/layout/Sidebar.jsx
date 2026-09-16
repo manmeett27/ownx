@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { Search, ShieldAlert, Flame, X, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Search, Flame, X, ChevronRight, Compass, Film, User, BookOpen } from 'lucide-react';
 import GlassCard from '../common/GlassCard';
 
-export default function Sidebar({ onSearchChange }) {
+export default function Sidebar({ onSearchChange, onNavigateProfile, onNavigateVideos }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState(null);
 
   const trendingTopics = [
-    { rank: 1, tag: 'AI_Content_Moderation', posts: '12.4k posts', category: 'Technology' },
-    { rank: 2, tag: 'Supabase_PostgreSQL', posts: '8.9k posts', category: 'Database' },
-    { rank: 3, tag: 'Clean_Design_System', posts: '6.2k posts', category: 'Design' },
-    { rank: 4, tag: 'PyTorch_CNN_Safety', posts: '4.1k posts', category: 'Machine Learning' },
-    { rank: 5, tag: 'FastAPI_Microservices', posts: '3.8k posts', category: 'Backend' }
+    { rank: 1, tag: 'Modern_Web_Design', posts: '14.2k posts', category: 'Technology' },
+    { rank: 2, tag: 'Cloudinary_Media', posts: '9.8k posts', category: 'Architecture' },
+    { rank: 3, tag: 'Creative_Shorts', posts: '7.5k posts', category: 'Media' },
+    { rank: 4, tag: 'Spatial_UI_3D', posts: '5.4k posts', category: 'Design' },
+    { rank: 5, tag: 'Community_Network', posts: '4.2k posts', category: 'Community' }
   ];
 
   const handleSearch = (e) => {
@@ -29,7 +29,6 @@ export default function Sidebar({ onSearchChange }) {
 
   const handleTopicClick = (tag) => {
     if (selectedTag === tag) {
-      // Toggle off
       handleClearSearch();
     } else {
       setSelectedTag(tag);
@@ -132,55 +131,70 @@ export default function Sidebar({ onSearchChange }) {
         </div>
       </GlassCard>
 
-      {/* AI Content Moderation Guidelines Card */}
+      {/* Community Resources & Guidelines */}
       <GlassCard style={{ padding: '18px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-          <ShieldAlert size={18} color="var(--primary-teal)" />
+          <BookOpen size={18} color="var(--primary-teal)" />
           <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--primary-dark-teal)' }}>
-            AI Content Shield
+            Community Standards
           </h3>
         </div>
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '12px' }}>
-          All content is analyzed in real time with PyTorch CNN computer vision and NLP heuristics to protect the community.
+        <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.5', marginBottom: '14px' }}>
+          OWNX is built on open collaboration, creative design sharing, and respectful conversations.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {[
-            'Alcohol & Substance Abuse',
-            'Sexual & Nudity Content',
-            'Violence & Weapons',
-            'Hate Speech & Harassment'
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '7px 10px',
-                borderRadius: '8px',
-                background: 'rgba(235, 244, 246, 0.65)',
-                border: '1px solid var(--border-glass-subtle)',
-                fontSize: '12px',
-                fontWeight: '500',
-                color: 'var(--text-main)'
-              }}
-            >
-              <span>{item}</span>
-              <span
-                style={{
-                  fontSize: '10px',
-                  fontWeight: '700',
-                  color: '#B91C1C',
-                  background: 'rgba(220, 38, 38, 0.1)',
-                  padding: '2px 6px',
-                  borderRadius: '4px'
-                }}
-              >
-                Blocked
-              </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button
+            onClick={() => {
+              if (onNavigateVideos) onNavigateVideos();
+              else window.location.hash = 'videos';
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 12px',
+              borderRadius: '10px',
+              background: 'rgba(235, 244, 246, 0.7)',
+              border: '1px solid var(--border-glass-subtle)',
+              cursor: 'pointer',
+              color: 'var(--primary-dark-teal)',
+              fontSize: '13px',
+              fontWeight: '600'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Film size={15} color="var(--primary-teal)" />
+              <span>Explore Short Videos</span>
             </div>
-          ))}
+            <ChevronRight size={14} color="var(--secondary-teal)" />
+          </button>
+
+          <button
+            onClick={() => {
+              if (onNavigateProfile) onNavigateProfile();
+              else window.location.hash = 'profile';
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 12px',
+              borderRadius: '10px',
+              background: 'rgba(235, 244, 246, 0.7)',
+              border: '1px solid var(--border-glass-subtle)',
+              cursor: 'pointer',
+              color: 'var(--primary-dark-teal)',
+              fontSize: '13px',
+              fontWeight: '600'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <User size={15} color="var(--primary-teal)" />
+              <span>Profile & Settings</span>
+            </div>
+            <ChevronRight size={14} color="var(--secondary-teal)" />
+          </button>
         </div>
       </GlassCard>
     </aside>
